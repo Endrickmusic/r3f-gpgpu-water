@@ -1,2 +1,2 @@
-# temp-vite-0124
-new template / vite / r3f / drei / leva
+# GPGPU Water Example with R3F 
+vite / r3f / drei / leva
