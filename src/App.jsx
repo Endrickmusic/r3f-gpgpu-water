@@ -14,7 +14,7 @@ function App() {
       position: [0, 0, 750],
       fov: 40 }}  
     >
-      <color attach="background" args={[0x000099]} />
+      <color attach="background" args={[0xbbddff]} />
     
     <OrbitControls />
 

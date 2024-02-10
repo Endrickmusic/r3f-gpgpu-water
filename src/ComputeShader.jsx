@@ -17,7 +17,6 @@ import { waterVertexShader } from './shaders/waterVertexShader.js'
  const simplex = new SimplexNoise();
 
 
-
 export default function initWater() {
 
     const materialColor = 0x0040C0
@@ -27,28 +26,7 @@ export default function initWater() {
     const materialRef = useRef(new ShaderMaterial())
 
     const waterMeshRef = useRef()
-
-    // const uniforms = useMemo(
-    //     () => ({
-    //         'diffuse': {
-    //         type: "c",
-    //         value: new Color( materialColor ),
-    //           },
-    //         'specular': {
-    //         type: "c",
-    //         value: new Color( 0x111111 ),
-    //         },
-    //         'shininess': {
-    //         type: "f",
-    //         value: Math.max( 50, 1e-4 )
-    //       },
-    //         'opacity': {
-    //         type: "f",
-    //         value: materialRef.current.opacity
-    //       }
-    //      }),[]
-         
-    //   )   
+    const meshRayRef = useRef()
 
     // Material attributes from THREE.MeshPhongMaterial
     // Sets the uniforms with the material values
@@ -67,15 +45,8 @@ export default function initWater() {
     // waterUniforms = materialRef.current.uniforms;
     // waterMeshRef.current.updateMatrix()
 
-    // // THREE.Mesh just for mouse raycasting
-    // const geometryRay = new THREE.PlaneGeometry( BOUNDS, BOUNDS, 1, 1 );
-    // meshRay = new THREE.Mesh( geometryRay, new THREE.MeshBasicMaterial( { color: 0xFFFFFF, visible: false } ) );
-    // meshRay.rotation.x = - Math.PI / 2;
-    // meshRay.matrixAutoUpdate = false;
     // meshRay.updateMatrix();
-    // scene.add( meshRay );
-
-
+   
     // Creates the gpu computation class and sets it up
 
     const gpuCompute = new GPUComputationRenderer( WIDTH, WIDTH, gl );
@@ -110,6 +81,24 @@ export default function initWater() {
 
     return(
     <>
+
+        {/*  Mesh just for mouse raycasting */}
+       
+        <mesh
+        ref={meshRayRef}
+        rotation = {[- Math.PI / 2, 0,0] }
+        matrixAutoUpdate = {false}
+        >
+            <planeGeometry 
+            args={[BOUNDS, BOUNDS, 1, 1]}
+            />
+            <meshBasicMaterial 
+            color = {0xFFFFFF} 
+            visible = {false}
+            />
+
+        </mesh>
+
         <mesh
         ref = {waterMeshRef}
         rotation = {[- Math.PI / 2, 0,0] }
