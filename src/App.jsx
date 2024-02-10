@@ -1,4 +1,5 @@
-import { Canvas } from '@react-three/fiber'
+import { useEffect } from 'react'
+import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 
 import './index.css'
@@ -6,17 +7,32 @@ import ComputeShader from './ComputeShader.jsx'
 
 function App() {
   
+  function Rig() {
+    const { camera } = useThree()
+    // const vec = new Vector3()
+  
+    return useEffect(() => {
+      camera.lookAt(0, -50, 0)
+    }), []
+  }
+
   return (
   <>
-
     <Canvas
     camera={{ 
-      position: [0, 0, 750],
-      fov: 40 }}  
+      position: [0, 500, 550],
+      fov: 40,
+      near: 10,
+      far: 3000
+      }
+    }  
     >
-      <color attach="background" args={[0xbbddff]} />
+
+    <color attach="background" args={[0xbbddff]} />
     
-    <OrbitControls />
+    {/* <OrbitControls /> */}
+
+    <Rig />
 
     <directionalLight 
     position={[300, 400, 175]}
@@ -38,8 +54,6 @@ function App() {
         color={0x0000ff}
         />
       </mesh>
-
-
 
     </Canvas>
   </>

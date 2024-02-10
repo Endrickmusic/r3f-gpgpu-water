@@ -1,6 +1,6 @@
 import { useRef, useMemo, useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
-import { UniformsUtils, ShaderChunk, ShaderMaterial, ShaderLib, Color, Vector2, HalfFloatType } from "three"
+import { UniformsUtils, ShaderChunk, ShaderMaterial, ShaderLib, Color, Vector2, HalfFloatType, Mesh } from "three"
 import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer.js'
 import { SimplexNoise } from 'three/addons/math/SimplexNoise.js'
 
@@ -21,17 +21,20 @@ export default function initWater() {
 
     const materialColor = 0x0040C0
 
-    const { gl } = useThree()
+    const { gl, camera } = useThree()
 
     const materialRef = useRef(new ShaderMaterial())
 
-    const waterMeshRef = useRef()
-    const meshRayRef = useRef()
+    const waterMeshRef = useRef(new Mesh())
+    const meshRayRef = useRef(new Mesh())
+
+    // console.log(waterMeshRef.current)
 
     // Material attributes from THREE.MeshPhongMaterial
     // Sets the uniforms with the material values
     
     useEffect(() => {
+    camera.lookAt(0, -200, 0)
     materialRef.current.uniforms[ 'diffuse' ].value = new Color( materialColor );
     materialRef.current.uniforms[ 'specular' ].value = new Color( 0x111111 );
     materialRef.current.uniforms[ 'shininess' ].value = Math.max( 50, 1e-4 );
@@ -43,9 +46,9 @@ export default function initWater() {
     materialRef.current.defines.BOUNDS = BOUNDS.toFixed( 1 );
 
     // waterUniforms = materialRef.current.uniforms;
-    // waterMeshRef.current.updateMatrix()
+    waterMeshRef.current.updateMatrix()
 
-    // meshRay.updateMatrix();
+    meshRayRef.current.updateMatrix();
    
     // Creates the gpu computation class and sets it up
 
