@@ -1,7 +1,8 @@
 import { Canvas } from '@react-three/fiber'
+import { OrbitControls } from '@react-three/drei'
 
 import './index.css'
-import Shader from './Shader.jsx'
+import ComputeShader from './ComputeShader.jsx'
 
 function App() {
   
@@ -10,11 +11,36 @@ function App() {
 
     <Canvas
     camera={{ 
-      position: [0, 0, 2],
+      position: [0, 0, 750],
       fov: 40 }}  
     >
-      <color attach="background" args={[0x999999]} />
-      <Shader />
+      <color attach="background" args={[0x000099]} />
+    
+    <OrbitControls />
+
+    <directionalLight 
+    position={[300, 400, 175]}
+    />
+
+    <directionalLight 
+    position={[ -100, 350, - 200]}
+    />
+
+      <ComputeShader />
+
+      <mesh
+      position={[-2, 0, -1]}
+      rotation={[Math.PI / 2, 0, 0 ]}
+      scale={15}
+      >
+        <boxGeometry />
+        <meshStandardMaterial 
+        color={0x0000ff}
+        />
+      </mesh>
+
+
+
     </Canvas>
   </>
   )
