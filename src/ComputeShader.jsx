@@ -1,6 +1,6 @@
-import { useRef, useMemo, useEffect } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useThree, useFrame } from '@react-three/fiber'
-import { UniformsUtils, ShaderChunk, ShaderMaterial, ShaderLib, Color, Vector2, HalfFloatType, Mesh } from "three"
+import { UniformsUtils, ShaderChunk, ShaderMaterial, ShaderLib, Color, Vector2, HalfFloatType, Mesh, Raycaster } from "three"
 import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer.js'
 import { SimplexNoise } from 'three/addons/math/SimplexNoise.js'
 
@@ -18,6 +18,10 @@ import { waterVertexShader } from './shaders/waterVertexShader.js'
 
 
 export default function initWater() {
+
+    let mouseMoved = false
+    const mouseCoords = new Vector2()
+	const raycaster = new Raycaster()
 
     const materialColor = 0x0040C0
 
@@ -44,8 +48,63 @@ export default function initWater() {
         const uniforms = heightmapVariable.material.uniforms
         gpuCompute.compute()
         waterUniforms[ 'heightmap' ].value = gpuCompute.getCurrentRenderTarget( heightmapVariable ).texture
+        
+        if ( mouseMoved ) {
+
+            raycaster.setFromCamera( mouseCoords, camera );
+
+            const intersects = raycaster.intersectObject( meshRayRef.current );
+
+            if ( intersects.length > 0 ) {
+
+                const point = intersects[ 0 ].point;
+                uniforms[ 'mousePos' ].value.set( point.x, point.z );
+
+            } else {
+
+                uniforms[ 'mousePos' ].value.set( 10000, 10000 );
+
+            }
+
+            mouseMoved = false;
+
+        } else {
+
+            uniforms[ 'mousePos' ].value.set( 10000, 10000 );
+
+        }
     })
 
+    // mouse logic
+    
+    function setMouseCoords( x, y ) {
+
+        mouseCoords.set( ( x / gl.domElement.clientWidth ) * 2 - 1, - ( y / gl.domElement.clientHeight ) * 2 + 1 )
+        mouseMoved = true;
+        console.log('setMouseCoords')
+
+    }
+
+    function onPointerMove( event ) {
+        // console.log('Pointer was moved.')
+        if ( event.isPrimary === false ) return
+
+        setMouseCoords( event.clientX, event.clientY )
+        // console.log(event.clientX)
+
+    }
+
+    window.addEventListener( 'resize', onWindowResize )
+
+    function onWindowResize() {
+
+        console.log('Window got resized')
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        gl.setSize( window.innerWidth, window.innerHeight );
+
+    }
 
     // Defines
     materialRef.current.defines.WIDTH = WIDTH.toFixed( 1 );
@@ -92,7 +151,7 @@ export default function initWater() {
 
         {/*  Mesh just for mouse raycasting */}
        
-        <mesh
+        <mesh      
         ref={meshRayRef}
         rotation = {[- Math.PI / 2, 0,0] }
         matrixAutoUpdate = {false}
@@ -108,6 +167,7 @@ export default function initWater() {
         </mesh>
 
         <mesh
+        onPointerMove={onPointerMove}       
         ref = {waterMeshRef}
         rotation = {[- Math.PI / 2, 0,0] }
         matrixAutoUpdate = {false}

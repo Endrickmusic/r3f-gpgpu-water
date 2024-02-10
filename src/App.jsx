@@ -19,6 +19,7 @@ function App() {
   return (
   <>
     <Canvas
+    dpr={window.devicePixelRatio}
     camera={{ 
       position: [0, 500, 550],
       fov: 40,
