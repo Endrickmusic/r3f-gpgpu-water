@@ -1,5 +1,5 @@
 import { useRef, useMemo, useEffect } from 'react'
-import { useThree } from '@react-three/fiber'
+import { useThree, useFrame } from '@react-three/fiber'
 import { UniformsUtils, ShaderChunk, ShaderMaterial, ShaderLib, Color, Vector2, HalfFloatType, Mesh } from "three"
 import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer.js'
 import { SimplexNoise } from 'three/addons/math/SimplexNoise.js'
@@ -34,18 +34,24 @@ export default function initWater() {
     // Sets the uniforms with the material values
     
     useEffect(() => {
-    camera.lookAt(0, -200, 0)
     materialRef.current.uniforms[ 'diffuse' ].value = new Color( materialColor );
     materialRef.current.uniforms[ 'specular' ].value = new Color( 0x111111 );
     materialRef.current.uniforms[ 'shininess' ].value = Math.max( 50, 1e-4 );
     materialRef.current.uniforms[ 'opacity' ].value = materialRef.current.opacity;
     }, [])
 
+    useFrame(() =>{
+        const uniforms = heightmapVariable.material.uniforms
+        gpuCompute.compute()
+        waterUniforms[ 'heightmap' ].value = gpuCompute.getCurrentRenderTarget( heightmapVariable ).texture
+    })
+
+
     // Defines
     materialRef.current.defines.WIDTH = WIDTH.toFixed( 1 );
     materialRef.current.defines.BOUNDS = BOUNDS.toFixed( 1 );
 
-    // waterUniforms = materialRef.current.uniforms;
+    const waterUniforms = materialRef.current.uniforms;
     waterMeshRef.current.updateMatrix()
 
     meshRayRef.current.updateMatrix();
@@ -64,22 +70,21 @@ export default function initWater() {
 
     fillTexture( heightmap0 )
 
-    const heightmapVariable = gpuCompute.addVariable( 'heightmap', heightmapFragmentShader, heightmap0 );
+    const heightmapVariable = gpuCompute.addVariable( 'heightmap', heightmapFragmentShader, heightmap0 )
 
-    gpuCompute.setVariableDependencies( heightmapVariable, [ heightmapVariable ] );
+    gpuCompute.setVariableDependencies( heightmapVariable, [ heightmapVariable ] )
 
-    heightmapVariable.material.uniforms[ 'mousePos' ] = { value: new Vector2( 10000, 10000 ) };
-    heightmapVariable.material.uniforms[ 'mouseSize' ] = { value: 20.0 };
-    heightmapVariable.material.uniforms[ 'viscosityConstant' ] = { value: 0.98 };
-    heightmapVariable.material.uniforms[ 'heightCompensation' ] = { value: 0 };
-    heightmapVariable.material.uniforms[ 'uTime' ] = { value: 0 };
-    heightmapVariable.material.defines.BOUNDS = BOUNDS.toFixed( 1 );
+    heightmapVariable.material.uniforms[ 'mousePos' ] = { value: new Vector2( 10000, 10000 ) }
+    heightmapVariable.material.uniforms[ 'mouseSize' ] = { value: 20.0 }
+    heightmapVariable.material.uniforms[ 'viscosityConstant' ] = { value: 0.98 }
+    heightmapVariable.material.uniforms[ 'heightCompensation' ] = { value: 0 }
+    heightmapVariable.material.uniforms[ 'uTime' ] = { value: 0 }
+    heightmapVariable.material.defines.BOUNDS = BOUNDS.toFixed( 1 )
 
-    const error = gpuCompute.init();
+    const error = gpuCompute.init()
     if ( error !== null ) {
 
-        console.error( error );
-
+        console.error( error )
     }
 
     return(
