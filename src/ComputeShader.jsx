@@ -13,42 +13,101 @@ import { waterVertexShader } from './shaders/waterVertexShader.js'
  // Water size in system units
  const BOUNDS = 512
  const BOUNDS_HALF = BOUNDS * 0.5
-
+ const materialColor = 0x0040C0
+ 
  const simplex = new SimplexNoise();
 
+function init(){
+    
+}
 
 export default function initWater() {
 
+    const { gl, camera, scene, state } = useThree()
+    const set = useThree((state) => state.set)
+
     let mouseMoved = false
     const mouseCoords = new Vector2()
-	const raycaster = new Raycaster()
+	const raycaster = new Raycaster()    
 
-    const materialColor = 0x0040C0
-
-    const { gl, camera } = useThree()
-
-    const materialRef = useRef(new ShaderMaterial())
-
+    let time = 0
     const waterMeshRef = useRef(new Mesh())
     const meshRayRef = useRef(new Mesh())
+    let waterUniforms
+    const materialRef = useRef(new ShaderMaterial())
 
-    // console.log(waterMeshRef.current)
+    let heightmapVariable
+    let gpuCompute
+    
+
+    console.log('Variables declared')
 
     // Material attributes from THREE.MeshPhongMaterial
     // Sets the uniforms with the material values
     
     useEffect(() => {
+    // set({ })
+    // Texture width for simulation
+    const WIDTH = 128
+
+    // Water size in system units
+    const BOUNDS = 512
+    const BOUNDS_HALF = BOUNDS * 0.5
+
+    const simplex = new SimplexNoise();    
+    console.log('useEffect 1')
     materialRef.current.uniforms[ 'diffuse' ].value = new Color( materialColor )
     materialRef.current.uniforms[ 'specular' ].value = new Color( 0x111111 )
     materialRef.current.uniforms[ 'shininess' ].value = Math.max( 50, 1e-4 )
     materialRef.current.uniforms[ 'opacity' ].value = materialRef.current.opacity
-    }, [])
 
-    useFrame(() =>{
-        const uniforms = heightmapVariable.material.uniforms
-        gpuCompute.compute()
-        waterUniforms[ 'heightmap' ].value = gpuCompute.getCurrentRenderTarget( heightmapVariable ).texture
-        
+     // Defines
+     materialRef.current.defines.WIDTH = WIDTH.toFixed( 1 );
+     materialRef.current.defines.BOUNDS = BOUNDS.toFixed( 1 );
+ 
+     waterUniforms = materialRef.current.uniforms;
+     waterMeshRef.current.updateMatrix()
+ 
+     meshRayRef.current.updateMatrix();
+    
+     // Creates the gpu computation class and sets it up
+     console.log('useEffect 2')
+     gpuCompute = new GPUComputationRenderer( WIDTH, WIDTH, gl );
+ 
+     if ( gl.capabilities.isWebGL2 === false ) {
+ 
+         gpuCompute.setDataType( HalfFloatType );
+ 
+     }
+     console.log('useEffect 3')
+     const heightmap0 = gpuCompute.createTexture()
+ 
+     fillTexture( heightmap0 )
+     console.log('useEffect 4')
+     heightmapVariable = gpuCompute.addVariable( 'heightmap', heightmapFragmentShader, heightmap0 )
+     console.log('useEffect 5')
+     gpuCompute.setVariableDependencies( heightmapVariable, [ heightmapVariable ] )
+    
+    heightmapVariable.material.uniforms[ 'mousePos' ] = { value: new Vector2( 10000, 10000 ) }
+    heightmapVariable.material.uniforms[ 'mouseSize' ] = { value: 20.0 }
+    heightmapVariable.material.uniforms[ 'viscosityConstant' ] = { value: 0.98 }
+    heightmapVariable.material.uniforms[ 'heightCompensation' ] = { value: 0 }
+    heightmapVariable.material.uniforms[ 'uTime' ] = { value: 0 }
+    heightmapVariable.material.defines.BOUNDS = BOUNDS.toFixed( 1 )
+    console.log('useEffect 6')
+    const error = gpuCompute.init()
+    if ( error !== null ) {
+
+        console.error( error )
+    }
+    console.log('useEffect 7')
+
+    }, [onWindowResize])
+
+    useFrame((state) =>{
+        // console.log("useFrame 1")
+       const uniforms = heightmapVariable.material.uniforms
+
         if ( mouseMoved ) {
 
             raycaster.setFromCamera( mouseCoords, camera );
@@ -73,6 +132,13 @@ export default function initWater() {
             uniforms[ 'mousePos' ].value.set( 10000, 10000 );
 
         }
+        // console.log("useFrame 2")
+        gpuCompute.compute()
+        // console.log("useFrame 3")
+        waterUniforms[ 'heightmap' ].value = gpuCompute.getCurrentRenderTarget( heightmapVariable ).texture
+        // console.log("useFrame 4")
+        state.gl.render( state.scene, state.camera )
+        console.log("useFrame 5")
     })
 
     // mouse logic
@@ -104,46 +170,6 @@ export default function initWater() {
 
         gl.setSize( window.innerWidth, window.innerHeight );
 
-    }
-
-    // Defines
-    materialRef.current.defines.WIDTH = WIDTH.toFixed( 1 );
-    materialRef.current.defines.BOUNDS = BOUNDS.toFixed( 1 );
-
-    const waterUniforms = materialRef.current.uniforms;
-    waterMeshRef.current.updateMatrix()
-
-    meshRayRef.current.updateMatrix();
-   
-    // Creates the gpu computation class and sets it up
-
-    const gpuCompute = new GPUComputationRenderer( WIDTH, WIDTH, gl );
-
-    if ( gl.capabilities.isWebGL2 === false ) {
-
-        gpuCompute.setDataType( HalfFloatType );
-
-    }
-
-    const heightmap0 = gpuCompute.createTexture()
-
-    fillTexture( heightmap0 )
-
-    const heightmapVariable = gpuCompute.addVariable( 'heightmap', heightmapFragmentShader, heightmap0 )
-
-    gpuCompute.setVariableDependencies( heightmapVariable, [ heightmapVariable ] )
-
-    heightmapVariable.material.uniforms[ 'mousePos' ] = { value: new Vector2( 10000, 10000 ) }
-    heightmapVariable.material.uniforms[ 'mouseSize' ] = { value: 20.0 }
-    heightmapVariable.material.uniforms[ 'viscosityConstant' ] = { value: 0.98 }
-    heightmapVariable.material.uniforms[ 'heightCompensation' ] = { value: 0 }
-    heightmapVariable.material.uniforms[ 'uTime' ] = { value: 0 }
-    heightmapVariable.material.defines.BOUNDS = BOUNDS.toFixed( 1 )
-
-    const error = gpuCompute.init()
-    if ( error !== null ) {
-
-        console.error( error )
     }
 
     return(
