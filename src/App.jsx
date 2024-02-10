@@ -19,8 +19,9 @@ function App() {
   return (
   <>
     <Canvas
-    dpr={window.devicePixelRatio}
-    camera={{ 
+      dpr={window.devicePixelRatio}
+      frameloop="always"
+      camera={{ 
       position: [0, 500, 550],
       fov: 40,
       near: 10,
@@ -29,7 +30,7 @@ function App() {
     }  
     >
 
-    <color attach="background" args={[0xbbddff]} />
+    <color attach="background" args={[0xffabdd]} />
     
     {/* <OrbitControls /> */}
 
@@ -37,24 +38,15 @@ function App() {
 
     <directionalLight 
     position={[300, 400, 175]}
+    intensity={5}
     />
 
     <directionalLight 
     position={[ -100, 350, - 200]}
+    intensity={1}
     />
 
       <ComputeShader />
-
-      <mesh
-      position={[-2, 0, -1]}
-      rotation={[Math.PI / 2, 0, 0 ]}
-      scale={15}
-      >
-        <boxGeometry />
-        <meshStandardMaterial 
-        color={0x0000ff}
-        />
-      </mesh>
 
     </Canvas>
   </>

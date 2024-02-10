@@ -13,7 +13,7 @@ import { waterVertexShader } from './shaders/waterVertexShader.js'
  // Water size in system units
  const BOUNDS = 512
  const BOUNDS_HALF = BOUNDS * 0.5
- const materialColor = 0x0040C0
+ 
  
  const simplex = new SimplexNoise();
 
@@ -38,27 +38,34 @@ export default function initWater() {
 
     let heightmapVariable
     let gpuCompute
-    
-
-    console.log('Variables declared')
 
     // Material attributes from THREE.MeshPhongMaterial
     // Sets the uniforms with the material values
     
+    window.addEventListener( 'resize', onWindowResize )
+  
+    function setMouseCoords( x, y ) {
+
+        mouseCoords.set( ( x / gl.domElement.clientWidth ) * 2 - 1, - ( y / gl.domElement.clientHeight ) * 2 + 1 )
+        mouseMoved = true;
+
+    }
+
+    function onPointerMove( event ) {
+      
+        if ( event.isPrimary === false ) return
+
+        setMouseCoords( event.clientX, event.clientY )
+    
+    }   
+
     useEffect(() => {
-    // set({ })
-    // Texture width for simulation
-    const WIDTH = 128
+    
+    const materialColor = 0x0040C0
 
-    // Water size in system units
-    const BOUNDS = 512
-    const BOUNDS_HALF = BOUNDS * 0.5
-
-    const simplex = new SimplexNoise();    
-    console.log('useEffect 1')
     materialRef.current.uniforms[ 'diffuse' ].value = new Color( materialColor )
     materialRef.current.uniforms[ 'specular' ].value = new Color( 0x111111 )
-    materialRef.current.uniforms[ 'shininess' ].value = Math.max( 50, 1e-4 )
+    materialRef.current.uniforms[ 'shininess' ].value = Math.max( 150, 1e-4 )
     materialRef.current.uniforms[ 'opacity' ].value = materialRef.current.opacity
 
      // Defines
@@ -66,12 +73,14 @@ export default function initWater() {
      materialRef.current.defines.BOUNDS = BOUNDS.toFixed( 1 );
  
      waterUniforms = materialRef.current.uniforms;
+     
      waterMeshRef.current.updateMatrix()
  
      meshRayRef.current.updateMatrix();
     
-     // Creates the gpu computation class and sets it up
-     console.log('useEffect 2')
+    // Creates the gpu computation class and sets it up
+    //  console.log('useEffect 2')
+
      gpuCompute = new GPUComputationRenderer( WIDTH, WIDTH, gl );
  
      if ( gl.capabilities.isWebGL2 === false ) {
@@ -79,13 +88,13 @@ export default function initWater() {
          gpuCompute.setDataType( HalfFloatType );
  
      }
-     console.log('useEffect 3')
+    //  console.log('useEffect 3')
      const heightmap0 = gpuCompute.createTexture()
  
-     fillTexture( heightmap0 )
-     console.log('useEffect 4')
+    fillTexture( heightmap0 )
+    //  console.log('useEffect 4')
      heightmapVariable = gpuCompute.addVariable( 'heightmap', heightmapFragmentShader, heightmap0 )
-     console.log('useEffect 5')
+    //  console.log('useEffect 5')
      gpuCompute.setVariableDependencies( heightmapVariable, [ heightmapVariable ] )
     
     heightmapVariable.material.uniforms[ 'mousePos' ] = { value: new Vector2( 10000, 10000 ) }
@@ -93,8 +102,12 @@ export default function initWater() {
     heightmapVariable.material.uniforms[ 'viscosityConstant' ] = { value: 0.98 }
     heightmapVariable.material.uniforms[ 'heightCompensation' ] = { value: 0 }
     heightmapVariable.material.uniforms[ 'uTime' ] = { value: 0 }
+    heightmapVariable.material.uniforms[ 'mouseSize' ].value = 80.0
+	heightmapVariable.material.uniforms[ 'viscosityConstant' ].value = 0.995 
+
     heightmapVariable.material.defines.BOUNDS = BOUNDS.toFixed( 1 )
-    console.log('useEffect 6')
+    
+    // console.log('useEffect 6')
     const error = gpuCompute.init()
     if ( error !== null ) {
 
@@ -143,24 +156,8 @@ export default function initWater() {
 
     // mouse logic
     
-    function setMouseCoords( x, y ) {
 
-        mouseCoords.set( ( x / gl.domElement.clientWidth ) * 2 - 1, - ( y / gl.domElement.clientHeight ) * 2 + 1 )
-        mouseMoved = true;
-        console.log('setMouseCoords')
-
-    }
-
-    function onPointerMove( event ) {
-        // console.log('Pointer was moved.')
-        if ( event.isPrimary === false ) return
-
-        setMouseCoords( event.clientX, event.clientY )
-        // console.log(event.clientX)
-
-    }
-
-    window.addEventListener( 'resize', onWindowResize )
+    
 
     function onWindowResize() {
 
