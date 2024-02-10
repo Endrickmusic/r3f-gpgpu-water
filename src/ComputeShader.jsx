@@ -34,10 +34,10 @@ export default function initWater() {
     // Sets the uniforms with the material values
     
     useEffect(() => {
-    materialRef.current.uniforms[ 'diffuse' ].value = new Color( materialColor );
-    materialRef.current.uniforms[ 'specular' ].value = new Color( 0x111111 );
-    materialRef.current.uniforms[ 'shininess' ].value = Math.max( 50, 1e-4 );
-    materialRef.current.uniforms[ 'opacity' ].value = materialRef.current.opacity;
+    materialRef.current.uniforms[ 'diffuse' ].value = new Color( materialColor )
+    materialRef.current.uniforms[ 'specular' ].value = new Color( 0x111111 )
+    materialRef.current.uniforms[ 'shininess' ].value = Math.max( 50, 1e-4 )
+    materialRef.current.uniforms[ 'opacity' ].value = materialRef.current.opacity
     }, [])
 
     useFrame(() =>{
@@ -174,4 +174,9 @@ function fillTexture( texture ) {
         }
 
     }
+}
+
+function GPUCompute (){
+
+    
 }
