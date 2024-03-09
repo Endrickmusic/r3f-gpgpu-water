@@ -12,19 +12,13 @@ import { waterVertexShader } from './shaders/waterVertexShader.js'
 
  // Water size in system units
  const BOUNDS = 512
- const BOUNDS_HALF = BOUNDS * 0.5
- 
  
  const simplex = new SimplexNoise();
-
-function init(){
-    
-}
 
 export default function initWater() {
 
     const { gl, camera, scene, state } = useThree()
-    const set = useThree((state) => state.set)
+    // const set = useThree((state) => state.set)
 
     let mouseMoved = false
     const mouseCoords = new Vector2()
@@ -69,25 +63,20 @@ export default function initWater() {
     materialRef.current.uniforms[ 'opacity' ].value = materialRef.current.opacity
 
      // Defines
-     materialRef.current.defines.WIDTH = WIDTH.toFixed( 1 );
-     materialRef.current.defines.BOUNDS = BOUNDS.toFixed( 1 );
+     materialRef.current.defines.WIDTH = WIDTH.toFixed( 1 )
+     materialRef.current.defines.BOUNDS = BOUNDS.toFixed( 1 )
  
-     waterUniforms = materialRef.current.uniforms;
+     waterUniforms = materialRef.current.uniforms
      
      waterMeshRef.current.updateMatrix()
  
-     meshRayRef.current.updateMatrix();
+     meshRayRef.current.updateMatrix()
     
     // Creates the gpu computation class and sets it up
     //  console.log('useEffect 2')
 
-     gpuCompute = new GPUComputationRenderer( WIDTH, WIDTH, gl );
+     gpuCompute = new GPUComputationRenderer( WIDTH, WIDTH, gl )
  
-     if ( gl.capabilities.isWebGL2 === false ) {
- 
-         gpuCompute.setDataType( HalfFloatType );
- 
-     }
     //  console.log('useEffect 3')
      const heightmap0 = gpuCompute.createTexture()
  
@@ -162,10 +151,10 @@ export default function initWater() {
     function onWindowResize() {
 
         console.log('Window got resized')
-        camera.aspect = window.innerWidth / window.innerHeight;
+        // camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
 
-        gl.setSize( window.innerWidth, window.innerHeight );
+        // gl.setSize( window.innerWidth, window.innerHeight );
 
     }
 
@@ -236,6 +225,9 @@ function fillTexture( texture ) {
         return r;
 
     }
+
+
+// Create data texture
 
     const pixels = texture.image.data;
 
