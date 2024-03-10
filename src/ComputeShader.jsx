@@ -25,7 +25,7 @@ export default function initWater() {
     let waterUniforms
     const materialRef = useRef()
     const debugRef = useRef()
-
+    const meshRayRef = useRef(new Mesh())
 
     const { gl, camera } = useThree()
 
@@ -54,9 +54,9 @@ export default function initWater() {
     // Initialisation
     gpuCompute.init()
     
-
     let mouseMoved = false
     const mouseCoords = new Vector2()
+	const raycaster = new Raycaster()    
    
 
     // Material attributes from THREE.MeshPhongMaterial
@@ -110,6 +110,33 @@ export default function initWater() {
     useFrame((state) =>{       
 
         gpuCompute.compute()
+
+         // mouse logic
+
+         if ( mouseMoved ) {
+
+            raycaster.setFromCamera( mouseCoords, camera );
+
+            const intersects = raycaster.intersectObject( meshRayRef.current );
+
+            if ( intersects.length > 0 ) {
+
+                const point = intersects[ 0 ].point;
+                uniforms.mousePos.value.set( point.x, point.z );
+
+            } else {
+
+                uniforms[ 'mousePos' ].value.set( 10000, 10000 );
+
+            }
+
+            mouseMoved = false;
+
+        } else {
+
+            uniforms[ 'mousePos' ].value.set( 10000, 10000 );
+
+        }
 
         materialRef.current.uniforms.heightmap.value = gpuCompute.getCurrentRenderTarget( heightmapVariable ).texture
         debugRef.current.material.map = gpuCompute.getCurrentRenderTarget( heightmapVariable ).texture
