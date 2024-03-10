@@ -50,13 +50,9 @@ export default function initWater() {
     const uniforms = heightmapVariable.material.uniforms
 
 
-
-
     // Initialisation
     gpuCompute.init()
     
-    
-
 
     let mouseMoved = false
     const mouseCoords = new Vector2()
@@ -72,15 +68,17 @@ export default function initWater() {
     function setMouseCoords( x, y ) {
 
         mouseCoords.set( ( x / gl.domElement.clientWidth ) * 2 - 1, - ( y / gl.domElement.clientHeight ) * 2 + 1 )
-        mouseMoved = true;
-
+        mouseMoved = true
+        uniforms[ 'mousePos' ].value.set( 0, 0 )
     }
 
-    function onPointerMove( event ) {
+    function handlePointerMove( event ) {
       
-        if ( event.isPrimary === false ) return
+        // if ( event.isPrimary === false ) 
+        // return
 
         setMouseCoords( event.clientX, event.clientY )
+        console.log('mouse moved')
     
     }   
 
@@ -95,10 +93,7 @@ export default function initWater() {
     materialRef.current.defines.WIDTH = WIDTH.toFixed( 1 )
     materialRef.current.defines.BOUNDS = BOUNDS.toFixed( 1 )
  
-     waterUniforms = materialRef.current.uniforms
-     
-     waterMeshRef.current.updateMatrix()
-
+    waterUniforms = materialRef.current.uniforms
     
     heightmapVariable.material.uniforms[ 'mousePos' ] = { value: new Vector2( 10000, 10000 ) }
     heightmapVariable.material.uniforms[ 'mouseSize' ] = { value: 20.0 }
@@ -119,37 +114,39 @@ export default function initWater() {
 
         // mouse logic
 
-        if ( mouseMoved ) {
+        // if ( mouseMoved ) {
 
-            raycaster.setFromCamera( mouseCoords, camera );
+        //     raycaster.setFromCamera( mouseCoords, camera );
 
-            const intersects = raycaster.intersectObject( meshRayRef.current );
+        //     const intersects = raycaster.intersectObject( meshRayRef.current );
 
-            if ( intersects.length > 0 ) {
+        //     if ( intersects.length > 0 ) {
 
-                const point = intersects[ 0 ].point;
-                uniforms[ 'mousePos' ].value.set( point.x, point.z );
+        //         const point = intersects[ 0 ].point;
+        //         uniforms[ 'mousePos' ].value.set( point.x, point.z );
 
-            } else {
+        //     } else {
 
-                uniforms[ 'mousePos' ].value.set( 10000, 10000 );
+        //         uniforms[ 'mousePos' ].value.set( 10000, 10000 );
 
-            }
+        //     }
 
-            mouseMoved = false;
+        //     mouseMoved = false;
 
-        } else {
+        // } else {
 
-            uniforms[ 'mousePos' ].value.set( 10000, 10000 );
+        //     uniforms[ 'mousePos' ].value.set( 10000, 10000 );
 
-        }
-        waterUniforms[ 'heightmap' ].value = gpuCompute.getCurrentRenderTarget( heightmapVariable ).texture
-        waterUniforms[ 'heightmap' ].value = gpuCompute.getCurrentRenderTarget( heightmapVariable ).texture
+        // }
+
+        materialRef.current.uniforms[ 'heightmap' ].value = gpuCompute.getCurrentRenderTarget( heightmapVariable ).texture
         debugRef.current.material.map = gpuCompute.getCurrentRenderTarget( heightmapVariable ).texture
         
         const time = state.clock.getElapsedTime()
 
         heightmapVariable.material.uniforms[ 'uTime' ].value = time
+
+        waterMeshRef.current.updateMatrix()
 
     })
 
@@ -157,10 +154,10 @@ export default function initWater() {
     function onWindowResize() {
 
         console.log('Window got resized')
-        // camera.aspect = window.innerWidth / window.innerHeight;
+        camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
 
-        // gl.setSize( window.innerWidth, window.innerHeight );
+        gl.setSize( window.innerWidth, window.innerHeight );
 
     }
 
@@ -169,7 +166,7 @@ export default function initWater() {
 
         {/*  Mesh just for mouse raycasting */}
        
-        <mesh      
+        {/* <mesh      
         ref={meshRayRef}
         rotation = {[- Math.PI / 2, 0,0] }
         matrixAutoUpdate = {false}
@@ -181,10 +178,10 @@ export default function initWater() {
             color = {0xFFFFFF} 
             visible = {false}
             />
-        </mesh>
+        </mesh> */}
 
         <mesh
-        onPointerMove={onPointerMove}       
+        onPointerMove={handlePointerMove}       
         ref = {waterMeshRef}
         rotation = {[- Math.PI / 2, 0,0] }
         matrixAutoUpdate = {false}
