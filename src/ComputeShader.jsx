@@ -22,7 +22,6 @@ export default function initWater() {
 
     const materialColor = 0x0040C0
     const waterMeshRef = useRef(new Mesh())
-    let waterUniforms
     const materialRef = useRef()
     const debugRef = useRef()
     const meshRayRef = useRef(new Mesh())
@@ -57,10 +56,7 @@ export default function initWater() {
     let mouseMoved = false
     const mouseCoords = new Vector2()
 	const raycaster = new Raycaster()    
-   
 
-    // Material attributes from THREE.MeshPhongMaterial
-    // Sets the uniforms with the material values
     
     window.addEventListener( 'resize', onWindowResize )
   
@@ -68,39 +64,35 @@ export default function initWater() {
 
         mouseCoords.set( ( x / gl.domElement.clientWidth ) * 2 - 1, - ( y / gl.domElement.clientHeight ) * 2 + 1 )
         mouseMoved = true
-        uniforms[ 'mousePos' ].value.set( 0, 0 )
+        uniforms.mousePos.value.set( 0, 0 )
     }
 
     function handlePointerMove( event ) {
       
-        // if ( event.isPrimary === false ) 
-        // return
+        if ( event.isPrimary === false ) 
+        return
 
         setMouseCoords( event.clientX, event.clientY )
         console.log('mouse moved')
     
     }   
 
+
+
     useEffect(() => {
     
-        // materialRef.current.uniforms[ 'diffuse' ].value = new Color( materialColor )
-        // materialRef.current.uniforms[ 'specular' ].value = new Color( 0x111111 )
-        // materialRef.current.uniforms[ 'shininess' ].value = Math.max( 150, 1e-4 )
-        // materialRef.current.uniforms[ 'opacity' ].value = materialRef.current.opacity
-
     // Defines
     materialRef.current.defines.WIDTH = WIDTH.toFixed( 1 )
     materialRef.current.defines.BOUNDS = BOUNDS.toFixed( 1 )
- 
-    waterUniforms = materialRef.current.uniforms
+
     
-    heightmapVariable.material.uniforms[ 'mousePos' ] = { value: new Vector2( 10000, 10000 ) }
-    heightmapVariable.material.uniforms[ 'mouseSize' ] = { value: 20.0 }
-    heightmapVariable.material.uniforms[ 'viscosityConstant' ] = { value: 0.98 }
-    heightmapVariable.material.uniforms[ 'heightCompensation' ] = { value: 0 }
-    heightmapVariable.material.uniforms[ 'uTime' ] = { value: 0 }
-    heightmapVariable.material.uniforms[ 'mouseSize' ].value = 80.0
-	heightmapVariable.material.uniforms[ 'viscosityConstant' ].value = 0.995 
+    uniforms.mousePos = { value: new Vector2( 10000, 10000 ) }
+    uniforms.mouseSize = { value: 20.0 }
+    uniforms.viscosityConstant = { value: 0.98 }
+    uniforms.heightCompensation = { value: 0 }
+    uniforms.uTime= { value: 0 }
+    uniforms.mouseSize.value = 80.0
+	uniforms.viscosityConstant.value = 0.995 
 
     heightmapVariable.material.defines.BOUNDS = BOUNDS.toFixed( 1 )
     
@@ -126,7 +118,7 @@ export default function initWater() {
 
             } else {
 
-                uniforms[ 'mousePos' ].value.set( 10000, 10000 );
+                uniforms.mousePos.value.set( 10000, 10000 );
 
             }
 
@@ -134,7 +126,7 @@ export default function initWater() {
 
         } else {
 
-            uniforms[ 'mousePos' ].value.set( 10000, 10000 );
+            uniforms.mousePos.value.set( 10000, 10000 );
 
         }
 
@@ -143,7 +135,7 @@ export default function initWater() {
         
         const time = state.clock.getElapsedTime()
 
-        heightmapVariable.material.uniforms[ 'uTime' ].value = time
+        uniforms.uTime.value = time
 
         waterMeshRef.current.updateMatrix()
 
