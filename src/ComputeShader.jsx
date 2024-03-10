@@ -7,18 +7,40 @@ import { SimplexNoise } from 'three/addons/math/SimplexNoise.js'
 import { heightmapFragmentShader } from './shaders/heightmapFragmentShader.js'
 import { waterVertexShader } from './shaders/waterVertexShader.js'
 
- // Texture width for simulation
- const WIDTH = 128
+     // Texture width for simulation
+     const WIDTH = 128
 
- // Water size in system units
- const BOUNDS = 512
- 
- const simplex = new SimplexNoise();
+     // Water size in system units
+     const BOUNDS = 512
+
+     const simplex = new SimplexNoise();
 
 export default function initWater() {
 
-    const { gl, camera, scene, state } = useThree()
-    // const set = useThree((state) => state.set)
+    const { gl, camera } = useThree()
+
+    // Creates the gpu computation class and sets it up
+
+    const gpuCompute = new GPUComputationRenderer( WIDTH, WIDTH, gl )
+
+    const heightmap0 = gpuCompute.createTexture()
+
+    // Variables 
+
+    const heightmapVariable = gpuCompute.addVariable( 'heightmap', heightmapFragmentShader, heightmap0 )
+
+    // Dependencies
+
+    gpuCompute.setVariableDependencies( heightmapVariable, [ heightmapVariable ] )
+
+    // Uniforms
+    const uniforms = heightmapVariable.material.uniforms
+
+    // Initialisation
+    gpuCompute.init()
+
+   
+
 
     let mouseMoved = false
     const mouseCoords = new Vector2()
@@ -29,9 +51,6 @@ export default function initWater() {
     const meshRayRef = useRef(new Mesh())
     let waterUniforms
     const materialRef = useRef(new ShaderMaterial())
-
-    let heightmapVariable
-    let gpuCompute
 
     // Material attributes from THREE.MeshPhongMaterial
     // Sets the uniforms with the material values
@@ -62,9 +81,9 @@ export default function initWater() {
     materialRef.current.uniforms[ 'shininess' ].value = Math.max( 150, 1e-4 )
     materialRef.current.uniforms[ 'opacity' ].value = materialRef.current.opacity
 
-     // Defines
-     materialRef.current.defines.WIDTH = WIDTH.toFixed( 1 )
-     materialRef.current.defines.BOUNDS = BOUNDS.toFixed( 1 )
+         // Defines
+    materialRef.current.defines.WIDTH = WIDTH.toFixed( 1 )
+    materialRef.current.defines.BOUNDS = BOUNDS.toFixed( 1 )
  
      waterUniforms = materialRef.current.uniforms
      
@@ -72,19 +91,16 @@ export default function initWater() {
  
      meshRayRef.current.updateMatrix()
     
-    // Creates the gpu computation class and sets it up
-    //  console.log('useEffect 2')
 
-     gpuCompute = new GPUComputationRenderer( WIDTH, WIDTH, gl )
  
     //  console.log('useEffect 3')
-     const heightmap0 = gpuCompute.createTexture()
+     
  
     fillTexture( heightmap0 )
     //  console.log('useEffect 4')
-     heightmapVariable = gpuCompute.addVariable( 'heightmap', heightmapFragmentShader, heightmap0 )
+     
     //  console.log('useEffect 5')
-     gpuCompute.setVariableDependencies( heightmapVariable, [ heightmapVariable ] )
+    
     
     heightmapVariable.material.uniforms[ 'mousePos' ] = { value: new Vector2( 10000, 10000 ) }
     heightmapVariable.material.uniforms[ 'mouseSize' ] = { value: 20.0 }
@@ -97,18 +113,13 @@ export default function initWater() {
     heightmapVariable.material.defines.BOUNDS = BOUNDS.toFixed( 1 )
     
     // console.log('useEffect 6')
-    const error = gpuCompute.init()
-    if ( error !== null ) {
-
-        console.error( error )
-    }
-    console.log('useEffect 7')
+  
 
     }, [onWindowResize])
 
-    useFrame((state) =>{
-        // console.log("useFrame 1")
-       const uniforms = heightmapVariable.material.uniforms
+    useFrame((state) =>{       
+
+        gpuCompute.compute()
 
         if ( mouseMoved ) {
 
@@ -135,12 +146,10 @@ export default function initWater() {
 
         }
         // console.log("useFrame 2")
-        gpuCompute.compute()
+        
         // console.log("useFrame 3")
         waterUniforms[ 'heightmap' ].value = gpuCompute.getCurrentRenderTarget( heightmapVariable ).texture
         // console.log("useFrame 4")
-        state.gl.render( state.scene, state.camera )
-        console.log("useFrame 5")
     })
 
     // mouse logic
@@ -249,9 +258,4 @@ function fillTexture( texture ) {
         }
 
     }
-}
-
-function GPUCompute (){
-
-    
 }
