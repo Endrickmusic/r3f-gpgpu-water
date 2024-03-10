@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react'
 import { useThree, useFrame } from '@react-three/fiber'
-import { UniformsUtils, ShaderChunk, ShaderMaterial, ShaderLib, Color, Vector2, HalfFloatType, Mesh, Raycaster } from "three"
+import { UniformsUtils, ShaderChunk, ShaderMaterial, ShaderLib, Color, Vector2, Mesh, Raycaster, MeshStandardMaterial } from "three"
 import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer.js'
 import { SimplexNoise } from 'three/addons/math/SimplexNoise.js'
 
@@ -17,6 +17,14 @@ import { waterVertexShader } from './shaders/waterVertexShader.js'
 
 export default function initWater() {
 
+    const materialColor = 0x0040C0
+    const waterMeshRef = useRef(new Mesh())
+    const meshRayRef = useRef(new Mesh())
+    let waterUniforms
+    const materialRef = useRef(new ShaderMaterial())
+    const debugRef = useRef()
+
+
     const { gl, camera } = useThree()
 
     // Creates the gpu computation class and sets it up
@@ -24,6 +32,10 @@ export default function initWater() {
     const gpuCompute = new GPUComputationRenderer( WIDTH, WIDTH, gl )
 
     const heightmap0 = gpuCompute.createTexture()
+
+    // Fills initial texture with noise
+
+    fillTexture( heightmap0 )
 
     // Variables 
 
@@ -34,23 +46,23 @@ export default function initWater() {
     gpuCompute.setVariableDependencies( heightmapVariable, [ heightmapVariable ] )
 
     // Uniforms
+
     const uniforms = heightmapVariable.material.uniforms
+
+
+
 
     // Initialisation
     gpuCompute.init()
-
-   
+    
+    
 
 
     let mouseMoved = false
     const mouseCoords = new Vector2()
 	const raycaster = new Raycaster()    
 
-    let time = 0
-    const waterMeshRef = useRef(new Mesh())
-    const meshRayRef = useRef(new Mesh())
-    let waterUniforms
-    const materialRef = useRef(new ShaderMaterial())
+
 
     // Material attributes from THREE.MeshPhongMaterial
     // Sets the uniforms with the material values
@@ -74,33 +86,19 @@ export default function initWater() {
 
     useEffect(() => {
     
-    const materialColor = 0x0040C0
-
     materialRef.current.uniforms[ 'diffuse' ].value = new Color( materialColor )
     materialRef.current.uniforms[ 'specular' ].value = new Color( 0x111111 )
     materialRef.current.uniforms[ 'shininess' ].value = Math.max( 150, 1e-4 )
     materialRef.current.uniforms[ 'opacity' ].value = materialRef.current.opacity
 
-         // Defines
+    // Defines
     materialRef.current.defines.WIDTH = WIDTH.toFixed( 1 )
     materialRef.current.defines.BOUNDS = BOUNDS.toFixed( 1 )
  
      waterUniforms = materialRef.current.uniforms
      
      waterMeshRef.current.updateMatrix()
- 
-     meshRayRef.current.updateMatrix()
-    
 
- 
-    //  console.log('useEffect 3')
-     
- 
-    fillTexture( heightmap0 )
-    //  console.log('useEffect 4')
-     
-    //  console.log('useEffect 5')
-    
     
     heightmapVariable.material.uniforms[ 'mousePos' ] = { value: new Vector2( 10000, 10000 ) }
     heightmapVariable.material.uniforms[ 'mouseSize' ] = { value: 20.0 }
@@ -112,14 +110,14 @@ export default function initWater() {
 
     heightmapVariable.material.defines.BOUNDS = BOUNDS.toFixed( 1 )
     
-    // console.log('useEffect 6')
-  
 
     }, [onWindowResize])
 
     useFrame((state) =>{       
 
         gpuCompute.compute()
+
+        // mouse logic
 
         if ( mouseMoved ) {
 
@@ -145,17 +143,16 @@ export default function initWater() {
             uniforms[ 'mousePos' ].value.set( 10000, 10000 );
 
         }
-        // console.log("useFrame 2")
-        
-        // console.log("useFrame 3")
         waterUniforms[ 'heightmap' ].value = gpuCompute.getCurrentRenderTarget( heightmapVariable ).texture
-        // console.log("useFrame 4")
+        waterUniforms[ 'heightmap' ].value = gpuCompute.getCurrentRenderTarget( heightmapVariable ).texture
+        debugRef.current.material.map = gpuCompute.getCurrentRenderTarget( heightmapVariable ).texture
+        
+        const time = state.clock.getElapsedTime()
+
+        heightmapVariable.material.uniforms[ 'uTime' ].value = time
+
     })
 
-    // mouse logic
-    
-
-    
 
     function onWindowResize() {
 
@@ -184,7 +181,6 @@ export default function initWater() {
             color = {0xFFFFFF} 
             visible = {false}
             />
-
         </mesh>
 
         <mesh
@@ -208,6 +204,19 @@ export default function initWater() {
             fragmentShader = {ShaderChunk [ 'meshphong_frag' ]}
             lights = {true}
             color = {0x0040C0}
+            />
+        </mesh>
+        
+        {/* Debug Plane */}
+
+        <mesh
+            ref = {debugRef}
+            position = {[350, 100, 0]}
+            rotation = {[-Math.PI * 0.3, 0, 0]}
+        >
+            <planeGeometry 
+            args={[150, 150, 1, 1]} />
+            <meshStandardMaterial
             />
         </mesh>
     </>
@@ -235,27 +244,4 @@ function fillTexture( texture ) {
 
     }
 
-
-// Create data texture
-
-    const pixels = texture.image.data;
-
-    let p = 0;
-    for ( let j = 0; j < WIDTH; j ++ ) {
-
-        for ( let i = 0; i < WIDTH; i ++ ) {
-
-            const x = i * 128 / WIDTH;
-            const y = j * 128 / WIDTH;
-
-            pixels[ p + 0 ] = noise( x, y );
-            pixels[ p + 1 ] = pixels[ p + 0 ];
-            pixels[ p + 2 ] = 0;
-            pixels[ p + 3 ] = 1;
-
-            p += 4;
-
-        }
-
-    }
 }

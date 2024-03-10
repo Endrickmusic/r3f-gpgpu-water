@@ -35,7 +35,7 @@ export const heightmapFragmentShader = `
 				newHeight += ( cos( mousePhase ) + 1.0) * 0.28;
 
 				heightmapValue.y = heightmapValue.x;
-				heightmapValue.x = newHeight ;
+				heightmapValue.x = newHeight;
 
 				gl_FragColor = heightmapValue;
 
