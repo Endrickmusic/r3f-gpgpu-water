@@ -7,6 +7,9 @@ import { SimplexNoise } from 'three/addons/math/SimplexNoise.js'
 import { heightmapFragmentShader } from './shaders/heightmapFragmentShader.js'
 import { waterVertexShader } from './shaders/waterVertexShader.js'
 
+import './RenderMaterial.jsx'
+import './SimulationMaterial'
+
      // Texture width for simulation
      const WIDTH = 128
 
@@ -19,9 +22,8 @@ export default function initWater() {
 
     const materialColor = 0x0040C0
     const waterMeshRef = useRef(new Mesh())
-    const meshRayRef = useRef(new Mesh())
     let waterUniforms
-    const materialRef = useRef(new ShaderMaterial())
+    const materialRef = useRef()
     const debugRef = useRef()
 
 
@@ -49,16 +51,13 @@ export default function initWater() {
 
     const uniforms = heightmapVariable.material.uniforms
 
-
     // Initialisation
     gpuCompute.init()
     
 
     let mouseMoved = false
     const mouseCoords = new Vector2()
-	const raycaster = new Raycaster()    
-
-
+   
 
     // Material attributes from THREE.MeshPhongMaterial
     // Sets the uniforms with the material values
@@ -84,10 +83,10 @@ export default function initWater() {
 
     useEffect(() => {
     
-    materialRef.current.uniforms[ 'diffuse' ].value = new Color( materialColor )
-    materialRef.current.uniforms[ 'specular' ].value = new Color( 0x111111 )
-    materialRef.current.uniforms[ 'shininess' ].value = Math.max( 150, 1e-4 )
-    materialRef.current.uniforms[ 'opacity' ].value = materialRef.current.opacity
+        // materialRef.current.uniforms[ 'diffuse' ].value = new Color( materialColor )
+        // materialRef.current.uniforms[ 'specular' ].value = new Color( 0x111111 )
+        // materialRef.current.uniforms[ 'shininess' ].value = Math.max( 150, 1e-4 )
+        // materialRef.current.uniforms[ 'opacity' ].value = materialRef.current.opacity
 
     // Defines
     materialRef.current.defines.WIDTH = WIDTH.toFixed( 1 )
@@ -112,34 +111,7 @@ export default function initWater() {
 
         gpuCompute.compute()
 
-        // mouse logic
-
-        // if ( mouseMoved ) {
-
-        //     raycaster.setFromCamera( mouseCoords, camera );
-
-        //     const intersects = raycaster.intersectObject( meshRayRef.current );
-
-        //     if ( intersects.length > 0 ) {
-
-        //         const point = intersects[ 0 ].point;
-        //         uniforms[ 'mousePos' ].value.set( point.x, point.z );
-
-        //     } else {
-
-        //         uniforms[ 'mousePos' ].value.set( 10000, 10000 );
-
-        //     }
-
-        //     mouseMoved = false;
-
-        // } else {
-
-        //     uniforms[ 'mousePos' ].value.set( 10000, 10000 );
-
-        // }
-
-        materialRef.current.uniforms[ 'heightmap' ].value = gpuCompute.getCurrentRenderTarget( heightmapVariable ).texture
+        materialRef.current.uniforms.heightmap.value = gpuCompute.getCurrentRenderTarget( heightmapVariable ).texture
         debugRef.current.material.map = gpuCompute.getCurrentRenderTarget( heightmapVariable ).texture
         
         const time = state.clock.getElapsedTime()
@@ -163,23 +135,6 @@ export default function initWater() {
 
     return(
     <>
-
-        {/*  Mesh just for mouse raycasting */}
-       
-        {/* <mesh      
-        ref={meshRayRef}
-        rotation = {[- Math.PI / 2, 0,0] }
-        matrixAutoUpdate = {false}
-        >
-            <planeGeometry 
-            args={[BOUNDS, BOUNDS, 1, 1]}
-            />
-            <meshBasicMaterial 
-            color = {0xFFFFFF} 
-            visible = {false}
-            />
-        </mesh> */}
-
         <mesh
         onPointerMove={handlePointerMove}       
         ref = {waterMeshRef}
@@ -189,18 +144,9 @@ export default function initWater() {
             <planeGeometry
             args={[BOUNDS, BOUNDS, WIDTH - 1, WIDTH - 1]}
             />
-            <shaderMaterial
+            <renderMaterial
             ref = {materialRef}
-            uniforms = {UniformsUtils.merge( [
-                ShaderLib[ 'phong' ].uniforms,
-                {
-                    'heightmap': { value: null }
-                }
-            ] ) }
-            vertexShader = {waterVertexShader}
-            fragmentShader = {ShaderChunk [ 'meshphong_frag' ]}
-            lights = {true}
-            color = {0x0040C0}
+            wireframe = {true}
             />
         </mesh>
         
