@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useEffect } from 'react'
 import { useThree, useFrame } from '@react-three/fiber'
 import { UniformsUtils, ShaderChunk, ShaderMaterial, ShaderLib, Color, Vector2, HalfFloatType, Mesh, Raycaster } from "three"
 import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer.js'
@@ -18,7 +18,6 @@ import { waterVertexShader } from './shaders/waterVertexShader.js'
 export default function initWater() {
 
     const { gl, camera, scene, state } = useThree()
-    // const set = useThree((state) => state.set)
 
     let mouseMoved = false
     const mouseCoords = new Vector2()
@@ -73,17 +72,16 @@ export default function initWater() {
      meshRayRef.current.updateMatrix()
     
     // Creates the gpu computation class and sets it up
-    //  console.log('useEffect 2')
 
      gpuCompute = new GPUComputationRenderer( WIDTH, WIDTH, gl )
  
-    //  console.log('useEffect 3')
-     const heightmap0 = gpuCompute.createTexture()
+  
+    const heightmap0 = gpuCompute.createTexture()
  
     fillTexture( heightmap0 )
-    //  console.log('useEffect 4')
+
      heightmapVariable = gpuCompute.addVariable( 'heightmap', heightmapFragmentShader, heightmap0 )
-    //  console.log('useEffect 5')
+    
      gpuCompute.setVariableDependencies( heightmapVariable, [ heightmapVariable ] )
     
     heightmapVariable.material.uniforms[ 'mousePos' ] = { value: new Vector2( 10000, 10000 ) }
@@ -95,8 +93,7 @@ export default function initWater() {
 	heightmapVariable.material.uniforms[ 'viscosityConstant' ].value = 0.995 
 
     heightmapVariable.material.defines.BOUNDS = BOUNDS.toFixed( 1 )
-    
-    // console.log('useEffect 6')
+   
     const error = gpuCompute.init()
     if ( error !== null ) {
 
@@ -107,7 +104,7 @@ export default function initWater() {
     }, [onWindowResize])
 
     useFrame((state) =>{
-        // console.log("useFrame 1")
+   
        const uniforms = heightmapVariable.material.uniforms
 
         if ( mouseMoved ) {
@@ -134,20 +131,17 @@ export default function initWater() {
             uniforms[ 'mousePos' ].value.set( 10000, 10000 );
 
         }
-        // console.log("useFrame 2")
+      
         gpuCompute.compute()
-        // console.log("useFrame 3")
+        
         waterUniforms[ 'heightmap' ].value = gpuCompute.getCurrentRenderTarget( heightmapVariable ).texture
-        // console.log("useFrame 4")
+       
         state.gl.render( state.scene, state.camera )
         console.log("useFrame 5")
     })
 
     // mouse logic
     
-
-    
-
     function onWindowResize() {
 
         console.log('Window got resized')
@@ -249,9 +243,4 @@ function fillTexture( texture ) {
         }
 
     }
-}
-
-function GPUCompute (){
-
-    
 }
