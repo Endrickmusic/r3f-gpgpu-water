@@ -23,14 +23,16 @@ export default function initWater() {
     const mouseCoords = new Vector2()
 	const raycaster = new Raycaster()    
 
-    const waterMeshRef = useRef(new Mesh())
-    const meshRayRef = useRef(new Mesh())
+    const materialColor = 0x0040C0
+
+    const waterMeshRef = useRef()
+    const meshRayRef = useRef()
     let waterUniforms
-    const materialRef = useRef(new ShaderMaterial())
+    const materialRef = useRef()
 
     const gpuCompute = useRef()
     const heightmapVariable = useRef()
-  
+    
     function setMouseCoords( x, y ) {
 
         mouseCoords.set( ( x / gl.domElement.clientWidth ) * 2 - 1, - ( y / gl.domElement.clientHeight ) * 2 + 1 )
@@ -48,14 +50,25 @@ export default function initWater() {
 
     useEffect(() => {
     
-     // Creates the gpu computation class and sets it up
-    gpuCompute.current = new GPUComputationRenderer( WIDTH, WIDTH, gl )
+    materialRef.current.uniforms[ 'diffuse' ].value = new Color( materialColor )
+    materialRef.current.uniforms[ 'specular' ].value = new Color( 0x111111 )
+    materialRef.current.uniforms[ 'shininess' ].value = Math.max( 150, 1e-4 )
+    materialRef.current.uniforms[ 'opacity' ].value = materialRef.current.opacity
 
     // Defines
     materialRef.current.defines.WIDTH = WIDTH.toFixed( 1 )
     materialRef.current.defines.BOUNDS = BOUNDS.toFixed( 1 )
     
-    const materialColor = 0x0040C0
+    waterMeshRef.current.rotation.x = - Math.PI / 2
+
+    waterMeshRef.current.updateMatrix()
+
+    meshRayRef.current.rotation.x = - Math.PI / 2
+
+	meshRayRef.current.updateMatrix()
+
+    // Creates the gpu computation class and sets it up
+    gpuCompute.current = new GPUComputationRenderer( WIDTH, WIDTH, gl )
     
     const heightmap0 = gpuCompute.current.createTexture()
 
@@ -75,13 +88,6 @@ export default function initWater() {
 
     heightmapVariable.current.material.defines.BOUNDS = BOUNDS.toFixed( 1 )
 
-    materialRef.current.uniforms[ 'diffuse' ].value = new Color( materialColor )
-    materialRef.current.uniforms[ 'specular' ].value = new Color( 0x111111 )
-    materialRef.current.uniforms[ 'shininess' ].value = Math.max( 150, 1e-4 )
-    materialRef.current.uniforms[ 'opacity' ].value = materialRef.current.opacity
-    
-    
-   
     gpuCompute.current.init()
 
     }, [])
@@ -90,7 +96,7 @@ export default function initWater() {
    
     waterUniforms = materialRef.current.uniforms
 
-       const uniforms = heightmapVariable.current.material.uniforms
+    const uniforms = heightmapVariable.current.material.uniforms
 
         if ( mouseMoved ) {
 
@@ -131,7 +137,6 @@ export default function initWater() {
        
         <mesh      
         ref={meshRayRef}
-        // rotation = {[- Math.PI / 2, 0,0] }
         matrixAutoUpdate = {false}
         >
             <planeGeometry 
@@ -147,7 +152,6 @@ export default function initWater() {
         <mesh
         onPointerMove={onPointerMove}       
         ref = {waterMeshRef}
-        // rotation = {[- Math.PI / 2 , 0, 0] }
         matrixAutoUpdate = {false}
         >
             <planeGeometry
