@@ -23,8 +23,6 @@ export default function initWater() {
     const mouseCoords = new Vector2()
 	const raycaster = new Raycaster()    
 
-    const materialColor = 0x0040C0
-
     const waterMeshRef = useRef()
     const meshRayRef = useRef()
     let waterUniforms
@@ -50,11 +48,6 @@ export default function initWater() {
 
     useEffect(() => {
     
-    materialRef.current.uniforms[ 'diffuse' ].value = new Color( materialColor )
-    materialRef.current.uniforms[ 'specular' ].value = new Color( 0x111111 )
-    materialRef.current.uniforms[ 'shininess' ].value = Math.max( 150, 1e-4 )
-    materialRef.current.uniforms[ 'opacity' ].value = materialRef.current.opacity
-
     // Defines
     materialRef.current.defines.WIDTH = WIDTH.toFixed( 1 )
     materialRef.current.defines.BOUNDS = BOUNDS.toFixed( 1 )
@@ -94,6 +87,13 @@ export default function initWater() {
 
     useFrame(() =>{
    
+    const materialColor = 0x0040C0
+
+    materialRef.current.uniforms[ 'diffuse' ].value = new Color( materialColor )
+    materialRef.current.uniforms[ 'specular' ].value = new Color( 0x111111 )
+    materialRef.current.uniforms[ 'shininess' ].value = Math.max( 150, 1e-4 )
+    materialRef.current.uniforms[ 'opacity' ].value = materialRef.current.opacity
+
     waterUniforms = materialRef.current.uniforms
 
     const uniforms = heightmapVariable.current.material.uniforms
