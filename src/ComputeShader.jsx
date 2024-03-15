@@ -25,7 +25,6 @@ export default function initWater() {
 
     const waterMeshRef = useRef()
     const meshRayRef = useRef()
-    let waterUniforms
     const materialRef = useRef()
 
     const gpuCompute = useRef()
@@ -61,6 +60,7 @@ export default function initWater() {
 	meshRayRef.current.updateMatrix()
 
     // Creates the gpu computation class and sets it up
+
     gpuCompute.current = new GPUComputationRenderer( WIDTH, WIDTH, gl )
     
     const heightmap0 = gpuCompute.current.createTexture()
@@ -71,13 +71,13 @@ export default function initWater() {
 
     gpuCompute.current.setVariableDependencies( heightmapVariable.current, [ heightmapVariable.current ] )
     
-    heightmapVariable.current.material.uniforms[ 'mousePos' ] = { value: new Vector2( 10000, 10000 ) }
-    heightmapVariable.current.material.uniforms[ 'mouseSize' ] = { value: 20.0 }
-    heightmapVariable.current.material.uniforms[ 'viscosityConstant' ] = { value: 0.98 }
-    heightmapVariable.current.material.uniforms[ 'heightCompensation' ] = { value: 0 }
-    heightmapVariable.current.material.uniforms[ 'uTime' ] = { value: 0 }
-    heightmapVariable.current.material.uniforms[ 'mouseSize' ].value = 80.0
-	heightmapVariable.current.material.uniforms[ 'viscosityConstant' ].value = 0.995 
+    heightmapVariable.current.material.uniforms.mousePos = { value: new Vector2( 10000, 10000 ) }
+    heightmapVariable.current.material.uniforms.mouseSize = { value: 20.0 }
+    heightmapVariable.current.material.uniforms.viscosityConstant = { value: 0.98 }
+    heightmapVariable.current.material.uniforms.heightCompensation = { value: 0 }
+    heightmapVariable.current.material.uniforms.uTime = { value: 0 }
+    heightmapVariable.current.material.uniforms.mouseSize.value = 80.0
+	heightmapVariable.current.material.uniforms.viscosityConstant.value = 0.995 
 
     heightmapVariable.current.material.defines.BOUNDS = BOUNDS.toFixed( 1 )
 
@@ -89,12 +89,10 @@ export default function initWater() {
    
     const materialColor = 0x0040C0
 
-    materialRef.current.uniforms[ 'diffuse' ].value = new Color( materialColor )
-    materialRef.current.uniforms[ 'specular' ].value = new Color( 0x111111 )
-    materialRef.current.uniforms[ 'shininess' ].value = Math.max( 150, 1e-4 )
-    materialRef.current.uniforms[ 'opacity' ].value = materialRef.current.opacity
-
-    waterUniforms = materialRef.current.uniforms
+    materialRef.current.uniforms.diffuse.value = new Color( materialColor )
+    materialRef.current.uniforms.specular.value = new Color( 0x111111 )
+    materialRef.current.uniforms.shininess.value = Math.max( 150, 1e-4 )
+    materialRef.current.uniforms.opacity.value = materialRef.current.opacity
 
     const uniforms = heightmapVariable.current.material.uniforms
 
@@ -107,11 +105,11 @@ export default function initWater() {
             if ( intersects.length > 0 ) {
 
                 const point = intersects[ 0 ].point;
-                uniforms[ 'mousePos' ].value.set( point.x, point.z );
+                uniforms.mousePos.value.set( point.x, point.z );
 
             } else {
 
-                uniforms[ 'mousePos' ].value.set( 10000, 10000 );
+                uniforms.mousePos.value.set( 10000, 10000 );
 
             }
 
@@ -119,13 +117,13 @@ export default function initWater() {
 
         } else {
 
-            uniforms[ 'mousePos' ].value.set( 10000, 10000 );
+            uniforms.mousePos.value.set( 10000, 10000 );
 
         }
       
         gpuCompute.current.compute()
         
-        waterUniforms[ 'heightmap' ].value = gpuCompute.current.getCurrentRenderTarget( heightmapVariable.current ).texture
+        materialRef.current.uniforms.heightmap.value = gpuCompute.current.getCurrentRenderTarget( heightmapVariable.current ).texture
        
     })
 
