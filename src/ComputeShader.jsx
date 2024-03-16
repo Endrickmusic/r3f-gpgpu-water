@@ -2,10 +2,14 @@ import { useRef, useEffect } from 'react'
 import { useThree, useFrame } from '@react-three/fiber'
 import { UniformsUtils, ShaderChunk, ShaderMaterial, ShaderLib, Color, Vector2, HalfFloatType, Mesh, Raycaster } from "three"
 import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer.js'
+import { useEnvironment, useTexture } from '@react-three/drei'
 import { SimplexNoise } from 'three/addons/math/SimplexNoise.js'
+import { useControls } from "leva"
 
 import { heightmapFragmentShader } from './shaders/heightmapFragmentShader.js'
 import { waterVertexShader } from './shaders/waterVertexShader.js'
+
+import ModifiedShader from './ModifiedShader.jsx'
 
  // Texture width for simulation
  const WIDTH = 128
@@ -30,6 +34,18 @@ export default function initWater() {
     const gpuCompute = useRef()
     const heightmapVariable = useRef()
     
+    const envMap = useEnvironment({files:'./environments/aerodynamics_workshop_2k.hdr'})
+    const [normalMap, roughnessMap] = useTexture(['./textures/waternormals.jpeg', './textures/SurfaceImperfections003_1K_var1.jpg'])
+
+    const options = useControls("Controls",{
+        BigElevation: { value: 0.35, min: -5, max: 5, step: 0.001 },
+        BigFrequency: { value: 3.4, min: 0, max: 30, step: 0.001 },
+        BigSpeed: { value: .4, min: -5, max: 5, step: 0.001 },
+        NoiseRangeDown: { value: -1.3, min: -1.3, max: 0, step: 0.001 },
+        NoiseRangeUp: { value: 1.3, min: 0., max: 1.3, step: 0.001 },
+        Wireframe: false
+        })
+
     function setMouseCoords( x, y ) {
 
         mouseCoords.set( ( x / gl.domElement.clientWidth ) * 2 - 1, - ( y / gl.domElement.clientHeight ) * 2 + 1 )
@@ -89,10 +105,10 @@ export default function initWater() {
    
     const materialColor = 0x0040C0
 
-    materialRef.current.uniforms.diffuse.value = new Color( materialColor )
-    materialRef.current.uniforms.specular.value = new Color( 0x111111 )
-    materialRef.current.uniforms.shininess.value = Math.max( 150, 1e-4 )
-    materialRef.current.uniforms.opacity.value = materialRef.current.opacity
+    // materialRef.current.uniforms.diffuse.value = new Color( materialColor )
+    // materialRef.current.uniforms.specular.value = new Color( 0x111111 )
+    // materialRef.current.uniforms.shininess.value = Math.max( 150, 1e-4 )
+    // materialRef.current.uniforms.opacity.value = materialRef.current.opacity
 
     const uniforms = heightmapVariable.current.material.uniforms
 
@@ -121,9 +137,9 @@ export default function initWater() {
 
         }
       
-        gpuCompute.current.compute()
+        // gpuCompute.current.compute()
         
-        materialRef.current.uniforms.heightmap.value = gpuCompute.current.getCurrentRenderTarget( heightmapVariable.current ).texture
+        // materialRef.current.uniforms.heightmap.value = gpuCompute.current.getCurrentRenderTarget( heightmapVariable.current ).texture
        
     })
 
@@ -155,20 +171,32 @@ export default function initWater() {
             <planeGeometry
             args={[BOUNDS, BOUNDS, WIDTH - 1, WIDTH - 1]}
             />
-            <shaderMaterial
+            <meshStandardMaterial
             ref = {materialRef}
-            uniforms = {UniformsUtils.merge( [
-                ShaderLib[ 'phong' ].uniforms,
-                {
-                    'heightmap': { value: null }
-                }
-            ] ) }
-            vertexShader = {waterVertexShader}
-            fragmentShader = {ShaderChunk [ 'meshphong_frag' ]}
+            // uniforms = {UniformsUtils.merge( [
+            //     ShaderLib[ 'phong' ].uniforms,
+            //     {
+            //         'heightmap': { value: null }
+            //     }
+            // ] ) }
+            // vertexShader = {waterVertexShader}
+            // fragmentShader = {ShaderChunk [ 'meshphong_frag' ]}
+            wireframe={false}
+            roughness={0.05}
+            roughnessMap={roughnessMap}
+            metalness={0.3}
+            envMap={envMap}
+            normalMap={normalMap}
+            normalScale={0.05}
             lights = {true}
             color = {0x0040C0}
             />
         </mesh>
+
+        <ModifiedShader 
+        meshRef={waterMeshRef}
+        options={options}
+        />
     </>
     )
 }
