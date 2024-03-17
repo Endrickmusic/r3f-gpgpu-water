@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from 'react'
 import { useThree, useFrame } from '@react-three/fiber'
 import { Vector2, Raycaster, DoubleSide } from "three"
 import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer.js'
-import { useEnvironment, useTexture, OrbitControls } from '@react-three/drei'
+import { useEnvironment, useTexture, OrbitControls, Environment } from '@react-three/drei'
 import { SimplexNoise } from 'three/addons/math/SimplexNoise.js'
 import { useControls } from "leva"
 
@@ -68,11 +68,11 @@ export default function initWater() {
     materialRef.current.defines.WIDTH = WIDTH.toFixed( 1 )
     materialRef.current.defines.BOUNDS = BOUNDS.toFixed( 1 )
     
-    waterMeshRef.current.rotation.x = - Math.PI / 2
+    // waterMeshRef.current.rotation.x = - Math.PI / 2
 
     waterMeshRef.current.updateMatrix()
 
-    meshRayRef.current.rotation.x = - Math.PI / 2
+    // meshRayRef.current.rotation.x = - Math.PI / 2
 
 	meshRayRef.current.updateMatrix()
 
@@ -116,7 +116,7 @@ export default function initWater() {
             if ( intersects.length > 0 ) {
 
                 const point = intersects[ 0 ].point;
-                uniforms.mousePos.value.set( point.x, point.z );
+                uniforms.mousePos.value.set( point.x, - point.y );
 
             } else {
 
@@ -144,7 +144,7 @@ export default function initWater() {
     return(
     <>
         <OrbitControls />
-        
+        <Environment files='./environments/aerodynamics_workshop_2k.hdr' background />
 
         {/*  Mesh just for mouse raycasting */}
        
@@ -171,7 +171,7 @@ export default function initWater() {
             <planeGeometry
             args={[BOUNDS, BOUNDS, WIDTH - 1, WIDTH - 1]}
             />
-            <meshStandardMaterial
+            <meshPhysicalMaterial
             ref = {materialRef}
             side={DoubleSide}
             wireframe={options.Wireframe}
@@ -183,6 +183,8 @@ export default function initWater() {
             normalScale={options.NormalMapScale}
             lights = {true}
             color = {0xccccff}
+            transmission={1.0}
+            thickness={100.0}
             />
         </mesh>
 

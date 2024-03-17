@@ -40,7 +40,7 @@ export default function ModifiedShader( { meshRef, options, heightmapTexture } )
         if (meshRef.current.material.userData.shader){
         meshRef.current.material.userData.shader.uniforms.uTime.value += delta
         meshRef.current.material.userData.shader.uniforms.heightmap.value = heightmapTexture
-        console.log(meshRef.current.material.userData.shader.uniforms)
+        // console.log(meshRef.current.material.userData.shader.uniforms)
       }   
       })
 
