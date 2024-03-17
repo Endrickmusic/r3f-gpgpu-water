@@ -1,10 +1,10 @@
 import { useRef, useEffect, useState } from 'react'
 import { useThree, useFrame } from '@react-three/fiber'
-import { UniformsUtils, ShaderChunk, ShaderMaterial, ShaderLib, Color, Vector2, HalfFloatType, Mesh, Raycaster } from "three"
+import { UniformsUtils, ShaderChunk, ShaderMaterial, ShaderLib, Color, Vector2, HalfFloatType, Mesh, Raycaster, DoubleSide } from "three"
 import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer.js'
-import { useEnvironment, useTexture } from '@react-three/drei'
+import { useEnvironment, useTexture, OrbitControls } from '@react-three/drei'
 import { SimplexNoise } from 'three/addons/math/SimplexNoise.js'
-import { useControls } from "leva"
+import { useControls, Leva } from "leva"
 
 import { heightmapFragmentShader } from './shaders/heightmapFragmentShader.js'
 import { waterVertexShader } from './shaders/waterVertexShader.js'
@@ -12,7 +12,7 @@ import { waterVertexShader } from './shaders/waterVertexShader.js'
 import ModifiedShader from './ModifiedShader.jsx'
 
  // Texture width for simulation
- const WIDTH = 128
+ const WIDTH = 256
 
  // Water size in system units
  const BOUNDS = 512
@@ -36,14 +36,15 @@ export default function initWater() {
     
     const envMap = useEnvironment({files:'./environments/aerodynamics_workshop_2k.hdr'})
     // const envMap = useEnvironment({files:'./environments/envmap.hdr'})
+
     const [normalMap, roughnessMap] = useTexture(['./textures/waternormals.jpeg', './textures/SurfaceImperfections003_1K_var1.jpg'])
 
     const options = useControls("Controls",{
-        Viscosity: { value: 0.35, min: -5, max: 5, step: 0.001 },
-        MouseSize: { value: 20., min: 0, max: 100., step: 0.1 },
-        Metalness: { value: .4, min: 0.0, max: 1.0, step: 0.001 },
+        Viscosity: { value: 0.85, min: 0.95, max: 0.999, step: 0.001 },
+        MouseSize: { value: 75., min: 1.0, max: 100., step: 1.0 },
+        Metalness: { value: .8, min: 0.0, max: 1.0, step: 0.001 },
         Roughness: { value: 0.2, min: 0.0, max: 1.0, step: 0.001 },
-        NormalMapScale: { value: 0.2, min: 0.0, max: 5.0, step: 0.01 },
+        NormalMapScale: { value: 0.03, min: 0.0, max: 5.0, step: 0.01 },
         Wireframe: false
         })
 
@@ -136,12 +137,15 @@ export default function initWater() {
         
         setHeightmapTexture(gpuCompute.current.getCurrentRenderTarget(heightmapVariable.current).texture)
 
-        // uniforms.mouseSize = options.MouseSize
+        uniforms.mouseSize.value = options.MouseSize
+        uniforms.viscosityConstant.value = options.Viscosity
     })
 
 
     return(
     <>
+        <OrbitControls />
+        
 
         {/*  Mesh just for mouse raycasting */}
        
@@ -155,6 +159,7 @@ export default function initWater() {
             <meshBasicMaterial 
             color = {0xFFFFFF} 
             visible = {false}
+            side = {DoubleSide}
             />
 
         </mesh>
@@ -169,7 +174,7 @@ export default function initWater() {
             />
             <meshStandardMaterial
             ref = {materialRef}
-            
+            side={DoubleSide}
             wireframe={options.Wireframe}
             roughness={options.Roughness}
             // roughnessMap={roughnessMap}
