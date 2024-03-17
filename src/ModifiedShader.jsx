@@ -1,7 +1,7 @@
 import { useMemo, useLayoutEffect } from "react"
 import { useFrame } from '@react-three/fiber'
 
-export default function ModifiedShader( { meshRef, options } ) {
+export default function ModifiedShader( { meshRef, options, heightmapTexture } ) {
 
     const customUniforms = useMemo(
         () => ({
@@ -17,8 +17,7 @@ export default function ModifiedShader( { meshRef, options } ) {
           uBigWaveFrequency: {
               type: "f",
               value: options.BigFrequency,
-              },
-               
+              },            
           uBigWaveSpeed: {
               type: "f",
               value: options.BigSpeed,
@@ -30,13 +29,18 @@ export default function ModifiedShader( { meshRef, options } ) {
           uNoiseRangeUp: {
               type: "f",
               value: options.NoiseRangeUp,
-              }
-         }),[]
+              },
+          heightmap: {
+            value: heightmapTexture,
+          }     
+         }),[options, heightmapTexture]
       )   
 
     useFrame((state, delta) => {
         if (meshRef.current.material.userData.shader){
         meshRef.current.material.userData.shader.uniforms.uTime.value += delta
+        meshRef.current.material.userData.shader.uniforms.heightmap.value = heightmapTexture
+        console.log(meshRef.current.material.userData.shader.uniforms)
       }   
       })
 
@@ -69,8 +73,10 @@ export default function ModifiedShader( { meshRef, options } ) {
            
             `
             #include <beginnormal_vertex>
+
             // Compute normal from heightmap
-				    objectNormal = vec3(
+				    
+            objectNormal = vec3(
 				   	( texture2D( heightmap, uv + vec2( - cellSize.x, 0 ) ).x - texture2D( heightmap, uv + vec2( cellSize.x, 0 ) ).x ) * WIDTH / BOUNDS,
 				  	( texture2D( heightmap, uv + vec2( 0, - cellSize.y ) ).x - texture2D( heightmap, uv + vec2( 0, cellSize.y ) ).x ) * WIDTH / BOUNDS,
 				  	1.0 );
@@ -96,11 +102,8 @@ export default function ModifiedShader( { meshRef, options } ) {
           '#include <color_fragment>',
           `
           #include <color_fragment>
-
-
           `
      )
-
 
      meshRef.current.material.userData.shader = shader
     }

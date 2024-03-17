@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { useThree, useFrame } from '@react-three/fiber'
 import { UniformsUtils, ShaderChunk, ShaderMaterial, ShaderLib, Color, Vector2, HalfFloatType, Mesh, Raycaster } from "three"
 import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer.js'
@@ -22,7 +22,7 @@ import ModifiedShader from './ModifiedShader.jsx'
 export default function initWater() {
 
     const { gl, camera } = useThree()
-
+    const [heightmapTexture, setHeightmapTexture] = useState()
     let mouseMoved = false
     const mouseCoords = new Vector2()
 	const raycaster = new Raycaster()    
@@ -98,17 +98,11 @@ export default function initWater() {
     heightmapVariable.current.material.defines.BOUNDS = BOUNDS.toFixed( 1 )
 
     gpuCompute.current.init()
-
+    
+    setHeightmapTexture(gpuCompute.current.getCurrentRenderTarget(heightmapVariable.current).texture)
     }, [])
 
     useFrame(() =>{
-   
-    const materialColor = 0x0040C0
-
-    // materialRef.current.uniforms.diffuse.value = new Color( materialColor )
-    // materialRef.current.uniforms.specular.value = new Color( 0x111111 )
-    // materialRef.current.uniforms.shininess.value = Math.max( 150, 1e-4 )
-    // materialRef.current.uniforms.opacity.value = materialRef.current.opacity
 
     const uniforms = heightmapVariable.current.material.uniforms
 
@@ -137,10 +131,10 @@ export default function initWater() {
 
         }
       
-        // gpuCompute.current.compute()
+        gpuCompute.current.compute()
         
-        // materialRef.current.uniforms.heightmap.value = gpuCompute.current.getCurrentRenderTarget( heightmapVariable.current ).texture
-       
+        setHeightmapTexture(gpuCompute.current.getCurrentRenderTarget(heightmapVariable.current).texture)
+        // console.log(gpuCompute.current.getCurrentRenderTarget(heightmapVariable.current).texture)
     })
 
 
@@ -173,30 +167,30 @@ export default function initWater() {
             />
             <meshStandardMaterial
             ref = {materialRef}
-            // uniforms = {UniformsUtils.merge( [
-            //     ShaderLib[ 'phong' ].uniforms,
-            //     {
-            //         'heightmap': { value: null }
-            //     }
-            // ] ) }
+            
             // vertexShader = {waterVertexShader}
             // fragmentShader = {ShaderChunk [ 'meshphong_frag' ]}
             wireframe={false}
-            roughness={0.05}
-            roughnessMap={roughnessMap}
-            metalness={0.3}
+            roughness={0.20}
+            // roughnessMap={roughnessMap}
+            metalness={1.}
             envMap={envMap}
             normalMap={normalMap}
-            normalScale={0.05}
+            normalScale={0.1}
             lights = {true}
-            color = {0x0040C0}
+            color = {0xccccff}
             />
         </mesh>
 
-        <ModifiedShader 
+        {/* <ModifiedShader 
         meshRef={waterMeshRef}
         options={options}
-        />
+        heightmapTexture={heightmapTexture}
+        /> */}
+        <ModifiedShader 
+        meshRef={waterMeshRef} 
+        options={options} 
+        heightmapTexture={heightmapTexture} />
     </>
     )
 }
