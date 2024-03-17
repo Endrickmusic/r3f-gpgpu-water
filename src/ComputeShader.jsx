@@ -1,13 +1,12 @@
 import { useRef, useEffect, useState } from 'react'
 import { useThree, useFrame } from '@react-three/fiber'
-import { UniformsUtils, ShaderChunk, ShaderMaterial, ShaderLib, Color, Vector2, HalfFloatType, Mesh, Raycaster, DoubleSide } from "three"
+import { Vector2, Raycaster, DoubleSide } from "three"
 import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer.js'
 import { useEnvironment, useTexture, OrbitControls } from '@react-three/drei'
 import { SimplexNoise } from 'three/addons/math/SimplexNoise.js'
-import { useControls, Leva } from "leva"
+import { useControls } from "leva"
 
 import { heightmapFragmentShader } from './shaders/heightmapFragmentShader.js'
-import { waterVertexShader } from './shaders/waterVertexShader.js'
 
 import ModifiedShader from './ModifiedShader.jsx'
 
