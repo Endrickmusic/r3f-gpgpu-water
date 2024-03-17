@@ -35,14 +35,15 @@ export default function initWater() {
     const heightmapVariable = useRef()
     
     const envMap = useEnvironment({files:'./environments/aerodynamics_workshop_2k.hdr'})
+    // const envMap = useEnvironment({files:'./environments/envmap.hdr'})
     const [normalMap, roughnessMap] = useTexture(['./textures/waternormals.jpeg', './textures/SurfaceImperfections003_1K_var1.jpg'])
 
     const options = useControls("Controls",{
-        BigElevation: { value: 0.35, min: -5, max: 5, step: 0.001 },
-        BigFrequency: { value: 3.4, min: 0, max: 30, step: 0.001 },
-        BigSpeed: { value: .4, min: -5, max: 5, step: 0.001 },
-        NoiseRangeDown: { value: -1.3, min: -1.3, max: 0, step: 0.001 },
-        NoiseRangeUp: { value: 1.3, min: 0., max: 1.3, step: 0.001 },
+        Viscosity: { value: 0.35, min: -5, max: 5, step: 0.001 },
+        MouseSize: { value: 20., min: 0, max: 100., step: 0.1 },
+        Metalness: { value: .4, min: 0.0, max: 1.0, step: 0.001 },
+        Roughness: { value: 0.2, min: 0.0, max: 1.0, step: 0.001 },
+        NormalMapScale: { value: 0.2, min: 0.0, max: 5.0, step: 0.01 },
         Wireframe: false
         })
 
@@ -134,7 +135,8 @@ export default function initWater() {
         gpuCompute.current.compute()
         
         setHeightmapTexture(gpuCompute.current.getCurrentRenderTarget(heightmapVariable.current).texture)
-        // console.log(gpuCompute.current.getCurrentRenderTarget(heightmapVariable.current).texture)
+
+        // uniforms.mouseSize = options.MouseSize
     })
 
 
@@ -168,25 +170,18 @@ export default function initWater() {
             <meshStandardMaterial
             ref = {materialRef}
             
-            // vertexShader = {waterVertexShader}
-            // fragmentShader = {ShaderChunk [ 'meshphong_frag' ]}
-            wireframe={false}
-            roughness={0.20}
+            wireframe={options.Wireframe}
+            roughness={options.Roughness}
             // roughnessMap={roughnessMap}
-            metalness={1.}
+            metalness={options.Metalness}
             envMap={envMap}
             normalMap={normalMap}
-            normalScale={0.1}
+            normalScale={options.NormalMapScale}
             lights = {true}
             color = {0xccccff}
             />
         </mesh>
 
-        {/* <ModifiedShader 
-        meshRef={waterMeshRef}
-        options={options}
-        heightmapTexture={heightmapTexture}
-        /> */}
         <ModifiedShader 
         meshRef={waterMeshRef} 
         options={options} 
