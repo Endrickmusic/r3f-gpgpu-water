@@ -39,11 +39,11 @@ export default function initWater() {
     const [normalMap, roughnessMap] = useTexture(['./textures/waternormals.jpeg', './textures/SurfaceImperfections003_1K_var1.jpg'])
 
     const options = useControls("Controls",{
-        Viscosity: { value: 0.85, min: 0.95, max: 0.999, step: 0.001 },
+        Viscosity: { value: 0.999, min: 0.95, max: 0.999, step: 0.001 },
         MouseSize: { value: 75., min: 1.0, max: 100., step: 1.0 },
-        Metalness: { value: .8, min: 0.0, max: 1.0, step: 0.001 },
-        Roughness: { value: 0.2, min: 0.0, max: 1.0, step: 0.001 },
-        NormalMapScale: { value: 0.03, min: 0.0, max: 5.0, step: 0.01 },
+        Metalness: { value: 0.0, min: 0.0, max: 1.0, step: 0.001 },
+        Roughness: { value: 0.22, min: 0.0, max: 1.0, step: 0.001 },
+        NormalMapScale: { value: 0.77, min: 0.0, max: 5.0, step: 0.01 },
         Wireframe: false
         })
 
