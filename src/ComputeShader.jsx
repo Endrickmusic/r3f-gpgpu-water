@@ -33,7 +33,8 @@ export default function initWater() {
     const gpuCompute = useRef()
     const heightmapVariable = useRef()
     
-    const envMap = useEnvironment({files:'./environments/aerodynamics_workshop_2k.hdr'})
+    // const envMap = useEnvironment({files:'./environments/aerodynamics_workshop_2k.hdr'})
+    // const envMap = useEnvironment({files:'./environments/venice_sunset_2k.hdr'})
     // const envMap = useEnvironment({files:'./environments/envmap.hdr'})
 
     const [normalMap, roughnessMap] = useTexture(['./textures/waternormals.jpeg', './textures/SurfaceImperfections003_1K_var1.jpg'])
@@ -144,7 +145,7 @@ export default function initWater() {
     return(
     <>
         <OrbitControls />
-        <Environment files='./environments/aerodynamics_workshop_2k.hdr' background />
+        <Environment files='.\environments\kloofendal_48d_partly_cloudy_puresky_2k.hdr' background />
 
         {/*  Mesh just for mouse raycasting */}
        
@@ -178,7 +179,7 @@ export default function initWater() {
             roughness={options.Roughness}
             // roughnessMap={roughnessMap}
             metalness={options.Metalness}
-            envMap={envMap}
+            // envMap={envMap}
             normalMap={normalMap}
             normalScale={options.NormalMapScale}
             lights = {true}
