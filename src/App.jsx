@@ -12,7 +12,7 @@ function App() {
     // const vec = new Vector3()
   
     return useEffect(() => {
-      camera.lookAt(0, -50, 0)
+      camera.lookAt(0, 0, 0)
     }), []
   }
 
@@ -22,7 +22,7 @@ function App() {
       dpr={window.devicePixelRatio}
       frameloop="always"
       camera={{ 
-      position: [0, 500, 550],
+      position: [0, 0, 950],
       fov: 40,
       near: 10,
       far: 3000
