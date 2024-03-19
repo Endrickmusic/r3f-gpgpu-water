@@ -34,6 +34,7 @@ export default function ModifiedShader( { meshRef, options, heightmapTexture } )
             value: heightmapTexture,
           }     
          }),[options, heightmapTexture]
+        //  }),[heightmapTexture]
       )   
 
     useFrame((state, delta) => {
