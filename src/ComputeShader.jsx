@@ -1,10 +1,10 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, useMemo } from 'react'
 import { useThree, useFrame } from '@react-three/fiber'
 import { Vector2, Raycaster, DoubleSide } from "three"
 import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer.js'
 import { useEnvironment, useTexture, OrbitControls, Environment } from '@react-three/drei'
 import { SimplexNoise } from 'three/addons/math/SimplexNoise.js'
-import { useControls } from "leva"
+import { Perf } from 'r3f-perf'
 
 import { heightmapFragmentShader } from './shaders/heightmapFragmentShader.js'
 
@@ -16,7 +16,7 @@ import ModifiedShader from './ModifiedShader.jsx'
  // Water size in system units
  const BOUNDS = 512
  
- const simplex = new SimplexNoise();
+ const simplex = new SimplexNoise()
 
 export default function initWater() {
 
@@ -39,14 +39,14 @@ export default function initWater() {
 
     const [normalMap, roughnessMap] = useTexture(['./textures/waternormals.jpeg', './textures/SurfaceImperfections003_1K_var1.jpg'])
 
-    const options = useControls("Controls",{
-        Viscosity: { value: 0.999, min: 0.95, max: 0.999, step: 0.001 },
-        MouseSize: { value: 75., min: 1.0, max: 100., step: 1.0 },
-        Metalness: { value: 0.0, min: 0.0, max: 1.0, step: 0.001 },
-        Roughness: { value: 0.22, min: 0.0, max: 1.0, step: 0.001 },
-        NormalMapScale: { value: 0.77, min: 0.0, max: 5.0, step: 0.01 },
-        Wireframe: false
-        })
+    // const options = useMemo(()=>({
+    //     Viscosity: { value: 0.999 },
+    //     MouseSize: { value: 75. },
+    //     Metalness: { value: 0.0 },
+    //     Roughness: { value: 0.22 },
+    //     NormalMapScale: { value: 0.77 },
+    //     Wireframe: false
+    // }))
 
     function setMouseCoords( x, y ) {
 
@@ -137,14 +137,15 @@ export default function initWater() {
         
         setHeightmapTexture(gpuCompute.current.getCurrentRenderTarget(heightmapVariable.current).texture)
 
-        uniforms.mouseSize.value = options.MouseSize
-        uniforms.viscosityConstant.value = options.Viscosity
+        // uniforms.mouseSize.value = options.MouseSize
+        // uniforms.viscosityConstant.value = options.Viscosity
     })
 
 
     return(
     <>
         <OrbitControls />
+        <Perf />
         <Environment files='.\environments\kloofendal_48d_partly_cloudy_puresky_2k.hdr' background />
 
         {/*  Mesh just for mouse raycasting */}
@@ -175,13 +176,13 @@ export default function initWater() {
             <meshPhysicalMaterial
             ref = {materialRef}
             side={DoubleSide}
-            wireframe={options.Wireframe}
-            roughness={options.Roughness}
+            // wireframe={options.Wireframe}
+            // roughness={options.Roughness}
             // roughnessMap={roughnessMap}
-            metalness={options.Metalness}
+            // metalness={options.Metalness}
             // envMap={envMap}
             normalMap={normalMap}
-            normalScale={options.NormalMapScale}
+            // normalScale={options.NormalMapScale}
             lights = {true}
             color = {0xccccff}
             transmission={1.0}
@@ -191,7 +192,7 @@ export default function initWater() {
 
         <ModifiedShader 
         meshRef={waterMeshRef} 
-        options={options} 
+        // options={options} 
         heightmapTexture={heightmapTexture} />
     </>
     )

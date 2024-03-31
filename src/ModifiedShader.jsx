@@ -1,7 +1,7 @@
 import { useMemo, useLayoutEffect } from "react"
 import { useFrame } from '@react-three/fiber'
 
-export default function ModifiedShader( { meshRef, options, heightmapTexture } ) {
+export default function ModifiedShader( { meshRef, heightmapTexture } ) {
 
     const customUniforms = useMemo(
         () => ({
@@ -11,30 +11,30 @@ export default function ModifiedShader( { meshRef, options, heightmapTexture } )
               },
           uBigWaveElevation: {
               type: "f",
-              value: options.BigElevation,
+              // value: options.BigElevation,
               },
                
           uBigWaveFrequency: {
               type: "f",
-              value: options.BigFrequency,
+              // value: options.BigFrequency,
               },            
           uBigWaveSpeed: {
               type: "f",
-              value: options.BigSpeed,
+              // value: options.BigSpeed,
               },
           uNoiseRangeDown: {
               type: "f",
-              value: options.NoiseRangeDown,
+              // value: options.NoiseRangeDown,
               },
           uNoiseRangeUp: {
               type: "f",
-              value: options.NoiseRangeUp,
+              // value: options.NoiseRangeUp,
               },
           heightmap: {
             value: heightmapTexture,
           }     
-         }),[options, heightmapTexture]
-        //  }),[heightmapTexture]
+        //  }),[options, heightmapTexture]
+         }),[heightmapTexture]
       )   
 
     useFrame((state, delta) => {
