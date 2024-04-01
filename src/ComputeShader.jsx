@@ -11,7 +11,7 @@ import { heightmapFragmentShader } from './shaders/heightmapFragmentShader.js'
 import ModifiedShader from './ModifiedShader.jsx'
 
  // Texture width for simulation
- const WIDTH = 256
+ const WIDTH = 128
 
  // Water size in system units
  const BOUNDS = 512
@@ -176,13 +176,13 @@ export default function initWater() {
             <meshPhysicalMaterial
             ref = {materialRef}
             side={DoubleSide}
-            // wireframe={options.Wireframe}
-            // roughness={options.Roughness}
+            wireframe={false}
+            roughness={0.2}
             // roughnessMap={roughnessMap}
-            // metalness={options.Metalness}
+            metalness={0.2}
             // envMap={envMap}
             normalMap={normalMap}
-            // normalScale={options.NormalMapScale}
+            normalScale={0.14}
             lights = {true}
             color = {0xccccff}
             transmission={1.0}

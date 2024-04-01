@@ -9,29 +9,8 @@ export default function ModifiedShader( { meshRef, heightmapTexture } ) {
             type: "f",
             value: 1.0,
               },
-          uBigWaveElevation: {
-              type: "f",
-              // value: options.BigElevation,
-              },
-               
-          uBigWaveFrequency: {
-              type: "f",
-              // value: options.BigFrequency,
-              },            
-          uBigWaveSpeed: {
-              type: "f",
-              // value: options.BigSpeed,
-              },
-          uNoiseRangeDown: {
-              type: "f",
-              // value: options.NoiseRangeDown,
-              },
-          uNoiseRangeUp: {
-              type: "f",
-              // value: options.NoiseRangeUp,
-              },
           heightmap: {
-            value: heightmapTexture,
+            value: heightmapTexture
           }     
         //  }),[options, heightmapTexture]
          }),[heightmapTexture]
