@@ -9,7 +9,7 @@ function App() {
   
   function Rig() {
     const { camera } = useThree()
-    // const vec = new Vector3()
+
   
     return useEffect(() => {
       camera.lookAt(0, 0, 0)
@@ -22,10 +22,10 @@ function App() {
       dpr={window.devicePixelRatio}
       frameloop="always"
       camera={{ 
-      position: [0, 0, 950],
+      position: [0, -3620, 1400],
       fov: 40,
-      near: 10,
-      far: 3000
+      near: 600,
+      far: 8000
       }
     }  
     >

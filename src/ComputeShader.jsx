@@ -14,7 +14,7 @@ import ModifiedShader from './ModifiedShader.jsx'
  const WIDTH = 128
 
  // Water size in system units
- const BOUNDS = 512
+ const BOUNDS = 4096
  
  const simplex = new SimplexNoise()
 
@@ -90,12 +90,12 @@ export default function initWater() {
     gpuCompute.current.setVariableDependencies( heightmapVariable.current, [ heightmapVariable.current ] )
     
     heightmapVariable.current.material.uniforms.mousePos = { value: new Vector2( 10000, 10000 ) }
-    heightmapVariable.current.material.uniforms.mouseSize = { value: 20.0 }
-    heightmapVariable.current.material.uniforms.viscosityConstant = { value: 0.98 }
+    heightmapVariable.current.material.uniforms.mouseSize = { value: 200.0 }
+    heightmapVariable.current.material.uniforms.viscosityConstant = { value: 0.95 }
     heightmapVariable.current.material.uniforms.heightCompensation = { value: 0 }
     heightmapVariable.current.material.uniforms.uTime = { value: 0 }
-    heightmapVariable.current.material.uniforms.mouseSize.value = 80.0
-	heightmapVariable.current.material.uniforms.viscosityConstant.value = 0.995 
+    heightmapVariable.current.material.uniforms.mouseSize.value = 580.0
+	heightmapVariable.current.material.uniforms.viscosityConstant.value = 0.9955
 
     heightmapVariable.current.material.defines.BOUNDS = BOUNDS.toFixed( 1 )
 
