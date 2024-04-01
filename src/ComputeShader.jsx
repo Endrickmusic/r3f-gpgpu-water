@@ -252,7 +252,7 @@ function Env({ intensity = 1, blur = 0, x = 0, y = 0, z = 0 }) {
 
     useFrame((state)=>{
         let time = state.clock.getElapsedTime()
-        envRef.current.rotation.z =  -time / 80.
+        envRef.current.rotation.z =  time / 80.
     })
 
 
@@ -262,7 +262,7 @@ function Env({ intensity = 1, blur = 0, x = 0, y = 0, z = 0 }) {
         <mesh 
         scale={2}
         ref={envRef}
-        rotation-x={Math.PI}
+        rotation-x={2*Math.PI}
         >
           <sphereGeometry />
           <meshBasicMaterial 
