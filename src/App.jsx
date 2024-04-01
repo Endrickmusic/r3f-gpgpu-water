@@ -4,6 +4,7 @@ import { OrbitControls } from '@react-three/drei'
 
 import './index.css'
 import ComputeShader from './ComputeShader.jsx'
+import Pool from './Pool.jsx'
 
 function App() {
   
@@ -24,7 +25,7 @@ function App() {
       camera={{ 
       position: [0, -3620, 1400],
       fov: 40,
-      near: 600,
+      near: 60,
       far: 8000
       }
     }  
@@ -47,6 +48,7 @@ function App() {
     />
 
       <ComputeShader />
+      <Pool />
 
     </Canvas>
   </>

@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState, useMemo } from 'react'
-import { useThree, useFrame } from '@react-three/fiber'
-import { Vector2, Raycaster, DoubleSide } from "three"
+import { useThree, useFrame, useLoader } from '@react-three/fiber'
+import { Vector2, Raycaster, DoubleSide, BackSide } from "three"
+import { RGBELoader } from 'three-stdlib'
 import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer.js'
 import { useEnvironment, useTexture, OrbitControls, Environment } from '@react-three/drei'
 import { SimplexNoise } from 'three/addons/math/SimplexNoise.js'
@@ -14,7 +15,7 @@ import ModifiedShader from './ModifiedShader.jsx'
  const WIDTH = 128
 
  // Water size in system units
- const BOUNDS = 4096
+ const BOUNDS = 2048
  
  const simplex = new SimplexNoise()
 
@@ -94,8 +95,8 @@ export default function initWater() {
     heightmapVariable.current.material.uniforms.viscosityConstant = { value: 0.95 }
     heightmapVariable.current.material.uniforms.heightCompensation = { value: 0 }
     heightmapVariable.current.material.uniforms.uTime = { value: 0 }
-    heightmapVariable.current.material.uniforms.mouseSize.value = 580.0
-	heightmapVariable.current.material.uniforms.viscosityConstant.value = 0.9955
+    heightmapVariable.current.material.uniforms.mouseSize.value = 200.0
+	heightmapVariable.current.material.uniforms.viscosityConstant.value = 0.9988
 
     heightmapVariable.current.material.defines.BOUNDS = BOUNDS.toFixed( 1 )
 
@@ -146,13 +147,14 @@ export default function initWater() {
     <>
         <OrbitControls />
         <Perf />
-        <Environment files='.\environments\kloofendal_48d_partly_cloudy_puresky_2k.hdr' background />
-
+        {/* <Environment files='.\environments\kloofendal_48d_partly_cloudy_puresky_2k.hdr' background /> */}
+        <Env />
         {/*  Mesh just for mouse raycasting */}
        
         <mesh      
         ref={meshRayRef}
         matrixAutoUpdate = {false}
+        scale={1.}
         >
             <planeGeometry 
             args={[BOUNDS, BOUNDS, 1, 1]}
@@ -177,16 +179,16 @@ export default function initWater() {
             ref = {materialRef}
             side={DoubleSide}
             wireframe={false}
-            roughness={0.2}
+            roughness={0.05}
             // roughnessMap={roughnessMap}
             metalness={0.2}
             // envMap={envMap}
             normalMap={normalMap}
             normalScale={0.14}
             lights = {true}
-            color = {0xccccff}
-            transmission={1.0}
-            thickness={100.0}
+            color = {0x99c2c0}
+            transmission={0.6}
+            thickness={200.0}
             />
         </mesh>
 
@@ -243,3 +245,33 @@ function fillTexture( texture ) {
 
     }
 }
+
+function Env({ intensity = 1, blur = 0, x = 0, y = 0, z = 0 }) {
+    const texture = useLoader(RGBELoader, './environments/kloofendal_48d_partly_cloudy_puresky_4k.hdr')
+   const envRef = useRef()
+
+    useFrame((state)=>{
+        let time = state.clock.getElapsedTime()
+        envRef.current.rotation.z =  -time / 80.
+    })
+
+
+    return (
+      <Environment blur={blur} background>
+        <color attach="background" args={['black']} />
+        <mesh 
+        scale={2}
+        ref={envRef}
+        rotation-x={Math.PI}
+        >
+          <sphereGeometry />
+          <meshBasicMaterial 
+          transparent 
+          opacity={intensity} 
+          map={texture} 
+          side={BackSide} 
+          toneMapped={false} />
+        </mesh>
+      </Environment>
+    )
+  }
