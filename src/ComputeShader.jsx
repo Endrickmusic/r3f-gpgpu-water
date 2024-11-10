@@ -37,9 +37,10 @@ export default function initWater() {
   })
   // const envMap = useEnvironment({files:'./environments/envmap.hdr'})
 
-  const [normalMap, roughnessMap] = useTexture([
+  const [normalMap, roughnessMap, diffuseMap] = useTexture([
     "./textures/waternormals.jpeg",
     "./textures/SurfaceImperfections003_1K_var1.jpg",
+    "./textures/Portrait_02.jpg",
   ])
 
   const options = useControls("Controls", {
@@ -213,6 +214,7 @@ export default function initWater() {
           wireframe={options.Wireframe}
           roughness={options.Roughness}
           // roughnessMap={roughnessMap}
+          map={diffuseMap}
           metalness={options.Metalness}
           envMap={envMap}
           normalMap={normalMap}
