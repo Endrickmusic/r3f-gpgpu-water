@@ -43,14 +43,22 @@ export default function initWater() {
   ])
 
   const options = useControls("Controls", {
-    Viscosity: { value: 0.85, min: 0.95, max: 0.999, step: 0.001 },
-    MouseSize: { value: 75, min: 1.0, max: 100, step: 1.0 },
-    Metalness: { value: 0.8, min: 0.0, max: 1.0, step: 0.001 },
-    Roughness: { value: 0.2, min: 0.0, max: 1.0, step: 0.001 },
-    NormalMapScale: { value: 0.03, min: 0.0, max: 5.0, step: 0.01 },
+    Viscosity: { value: 0.99, min: 0.95, max: 0.999, step: 0.001 },
+    MouseSize: { value: 41, min: 1.0, max: 100, step: 1.0 },
+    Metalness: { value: 0.14, min: 0.0, max: 1.0, step: 0.001 },
+    Roughness: { value: 0.0, min: 0.0, max: 1.0, step: 0.001 },
+    NormalMapScale: { value: 0.16, min: 0.0, max: 5.0, step: 0.01 },
     Wireframe: false,
-    NoiseStrength: { value: 0.2, min: 0.0, max: 1.0, step: 0.01 },
-    NoiseSpeed: { value: 0.05, min: 0.0, max: 0.5, step: 0.01 },
+    NoiseStrength: { value: 5.0, min: 0.0, max: 10.0, step: 0.01 },
+    NoiseSpeed: { value: 0.07, min: 0.0, max: 0.5, step: 0.01 },
+    SmallWaveSpeed: { value: 0.8, min: 0.0, max: 1.0, step: 0.01 },
+    SmallWaveIteration: { value: 10.0, min: 0.0, max: 10.0, step: 0.1 },
+    BigWaveElevation: { value: 0.76, min: 0.0, max: 1.0, step: 0.01 },
+    BigWaveFrequency: { value: 0.2, min: 0.0, max: 2.0, step: 0.01 },
+    BigWaveSpeed: { value: 10.0, min: 0.0, max: 10.0, step: 0.01 },
+    NoiseRangeDown: { value: 0.0, min: -2.0, max: 0.0, step: 0.1 },
+    NoiseRangeUp: { value: 0.0, min: 0.0, max: 2.0, step: 0.1 },
+    NoiseFrequency: { value: 0.1, min: 0.01, max: 0.1, step: 0.001 },
   })
 
   function setMouseCoords(x, y) {
@@ -86,7 +94,7 @@ export default function initWater() {
 
     const heightmap0 = gpuCompute.current.createTexture()
 
-    fillTexture(heightmap0)
+    // fillTexture(heightmap0)
 
     heightmapVariable.current = gpuCompute.current.addVariable(
       "heightmap",
@@ -110,8 +118,24 @@ export default function initWater() {
     }
     heightmapVariable.current.material.uniforms.uTime = { value: 0.0 }
     heightmapVariable.current.material.uniforms.noiseStrength = { value: 0.2 }
-    heightmapVariable.current.material.uniforms.mouseSize.value = 80.0
-    heightmapVariable.current.material.uniforms.viscosityConstant.value = 0.995
+    heightmapVariable.current.material.uniforms.uSmallWaveSpeed = { value: 0.2 }
+    heightmapVariable.current.material.uniforms.uSmallWaveIteration = {
+      value: 1.0,
+    }
+    heightmapVariable.current.material.uniforms.uBigWaveElevation = {
+      value: 0.2,
+    }
+    heightmapVariable.current.material.uniforms.uBigWaveFrequency = {
+      value: 0.5,
+    }
+    heightmapVariable.current.material.uniforms.uBigWaveSpeed = { value: 0.2 }
+    heightmapVariable.current.material.uniforms.uNoiseRangeDown = {
+      value: -1.0,
+    }
+    heightmapVariable.current.material.uniforms.uNoiseRangeUp = { value: 1.0 }
+    heightmapVariable.current.material.uniforms.uNoiseFrequency = {
+      value: 0.025,
+    }
 
     heightmapVariable.current.material.defines.BOUNDS = BOUNDS.toFixed(1)
 
@@ -145,16 +169,25 @@ export default function initWater() {
 
     uniforms.uTime.value = state.clock.elapsedTime
 
+    // Update all shader uniforms from options
+    uniforms.mouseSize.value = options.MouseSize
+    uniforms.viscosityConstant.value = options.Viscosity
+    uniforms.noiseStrength.value = options.NoiseStrength
+    uniforms.uSmallWaveSpeed.value = options.SmallWaveSpeed
+    uniforms.uSmallWaveIteration.value = options.SmallWaveIteration
+    uniforms.uBigWaveElevation.value = options.BigWaveElevation
+    uniforms.uBigWaveFrequency.value = options.BigWaveFrequency
+    uniforms.uBigWaveSpeed.value = options.BigWaveSpeed
+    uniforms.uNoiseRangeDown.value = options.NoiseRangeDown
+    uniforms.uNoiseRangeUp.value = options.NoiseRangeUp
+    uniforms.uNoiseFrequency.value = options.NoiseFrequency
+
     gpuCompute.current.compute()
 
     setHeightmapTexture(
       gpuCompute.current.getCurrentRenderTarget(heightmapVariable.current)
         .texture
     )
-
-    uniforms.mouseSize.value = options.MouseSize
-    uniforms.viscosityConstant.value = options.Viscosity
-    uniforms.noiseStrength.value = options.NoiseStrength
   })
 
   return (
